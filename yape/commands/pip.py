@@ -22,6 +22,7 @@ def pip_install(config: YAPEConfig):
     Args:
         config (YAPEConfig): The yape config.
     """
+    assert len(config.requirements) > 0, "No requirements found in config, cannot install."
     yape_log.info("Running pip install in venv @ " + config.venv_path)
     config.load_virtualenv()
     cmnd = ["pip", *pip_command_args(config)]

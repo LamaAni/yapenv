@@ -7,6 +7,8 @@ from yape.log import yape_log
 from yape.consts import YAPE_CONFIG_FILES
 from yape.config import YAPEConfig
 from yape.utils import deep_merge, resolve_template, touch
+from yape.commands.virtualenv import virtualenv_create
+from yape.commands.pip import pip_install
 
 
 def delete(config: YAPEConfig, force: bool = False):
@@ -80,3 +82,21 @@ def init(
     if add_requirement_files:
         touch(os.path.join(active_config.source_directory, "requirements.txt"))
         touch(os.path.join(active_config.source_directory, "requirements.dev.txt"))
+
+
+def install(config: YAPEConfig):
+    if not config.has_virtual_environment():
+        virtualenv_create(config)
+
+    if len(config.requirements) > 0:
+        pip_install(config)
+    else:
+        yape_log.warn("No requirements found in config. Skipping pip install")
+
+    yape_log.info("Copying yape shell activation script")
+    shutil.copyfile(
+        resolve_template("activate_yape_shell"),
+        config.resolve_from_venv_directory("activate_yape_shell"),
+    )
+
+    yape_log.info("Venv ready")

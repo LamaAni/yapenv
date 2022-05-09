@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Union
+from typing import List, Union
 import click
 import shutil
 from dotenv import load_dotenv
@@ -50,27 +50,30 @@ class CommonOptions(dict):
         return config
 
     @classmethod
-    def decorator(cls, fn):
-        for opt in [
-            click.argument("path", default=os.curdir),
-            click.option(
-                "-e",
-                "--env",
-                "--environment",
-                help="Name of the extra environment config to load",
-                default=None,
-            ),
-            click.option("--env-file", help="The yape environment local env file", default=".env"),
-            click.option(
-                "--inherit-depth",
-                help="Max number of config parents to inherit (0 to disable, -1 inf)",
-                default=None,
-                type=int,
-            ),
-            click.option("--full-errors", help="Show full python errors", is_flag=True),
-        ]:
-            fn = opt(fn)
-        return fn
+    def decorator(cls):
+        def apply(fn):
+            for opt in [
+                click.argument("path", default=os.curdir),
+                click.option(
+                    "-e",
+                    "--env",
+                    "--environment",
+                    help="Name of the extra environment config to load",
+                    default=None,
+                ),
+                click.option("--env-file", help="The yape environment local env file", default=".env"),
+                click.option(
+                    "--inherit-depth",
+                    help="Max number of config parents to inherit (0 to disable, -1 inf)",
+                    default=None,
+                    type=int,
+                ),
+                click.option("--full-errors", help="Show full python errors", is_flag=True),
+            ]:
+                fn = opt(fn)
+            return fn
+
+        return apply
 
 
 class FormatOptions(dict):
@@ -115,14 +118,14 @@ def pip_command():
 
 @pip_command.command("args", help="Create a pip install command for the yape config")
 @FormatOptions.decorator(PrintFormat.cli)
-@CommonOptions.decorator
+@CommonOptions.decorator()
 def pip_args(**kwargs):
     config = CommonOptions(kwargs).load()
     print(FormatOptions(kwargs).print(yape_commands.pip_command_args(config)))
 
 
 @pip_command.command("install", help="Run pip install using the config (within this python version)")
-@CommonOptions.decorator
+@CommonOptions.decorator()
 def pip_install(**kwargs):
     config = CommonOptions(kwargs).load()
     yape_commands.pip_install(config)
@@ -135,7 +138,7 @@ def virtualenv_command():
 
 @virtualenv_command.command("args", help="Create a venv install command for the yape config")
 @FormatOptions.decorator(PrintFormat.cli)
-@CommonOptions.decorator
+@CommonOptions.decorator()
 def virtualenv_args(**kwargs):
     config = CommonOptions(kwargs).load()
     print(FormatOptions(kwargs).print(yape_commands.virtualenv_args(config)))
@@ -143,7 +146,7 @@ def virtualenv_args(**kwargs):
 
 @virtualenv_command.command("create", help="Create a venv install command for the yape config")
 @FormatOptions.decorator(PrintFormat.cli)
-@CommonOptions.decorator
+@CommonOptions.decorator()
 def virtualenv_create(**kwargs):
     config = CommonOptions(kwargs).load()
     yape_commands.virtualenv_create(config)
@@ -154,7 +157,7 @@ def virtualenv_create(**kwargs):
 @click.option("-f", "--config-filename", help="Override the configuration filename", default=None)
 @click.option("--no-requirement-files", help="Do not initialize with requirement files", is_flag=True, default=None)
 @click.option("--reset", help="Delete current configuration and reset it.", is_flag=True, default=False)
-@CommonOptions.decorator
+@CommonOptions.decorator()
 def init(
     reset=False,
     python_version: str = None,
@@ -175,36 +178,15 @@ def init(
 
 @yape.command("delete", help="Delete the virtual environment installation")
 @click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
-@CommonOptions.decorator
+@CommonOptions.decorator()
 def delete(force: bool = False, **kwargs):
     config = CommonOptions(kwargs).load()
     yape_commands.delete(config, force=force)
 
 
-@yape.command()
-@CommonOptions.decorator
-def install(**kwargs):
-    config = CommonOptions(kwargs).load()
-    yape_commands.virtualenv_create(config)
-    yape_commands.pip_install(config)
-
-    # Copy the enable script.
-    venv_bin = config.resolve_from_venv_directory("bin")
-    yape_root = os.path.dirname(__file__)
-
-    yape_log.info("Copying yape shell activation script")
-
-    shutil.copyfile(
-        os.path.join(yape_root, "templates", "activate_yape_shell"),
-        os.path.join(venv_bin, "activate_yape_shell"),
-    )
-
-    yape_log.info("Venv ready")
-
-
 @yape.command(help="Export the requirement list")
 @FormatOptions.decorator(PrintFormat.list)
-@CommonOptions.decorator
+@CommonOptions.decorator()
 def export(**kwargs):
     config = CommonOptions(kwargs).load()
     packages = [r.package for r in config.requirements if r.package is not None]
@@ -214,18 +196,40 @@ def export(**kwargs):
 @yape.command(help="Print the YAPE computed configuration")
 @click.option("--resolve", help="Resolve requirement files", is_flag=True, default=None)
 @FormatOptions.decorator(PrintFormat.yaml)
-@CommonOptions.decorator
+@CommonOptions.decorator()
 def config(resolve: bool = False, **kwargs):
     config = CommonOptions(kwargs).load(resolve_imports=resolve)
     print(FormatOptions(kwargs).print(config.to_dictionary()))
 
 
-@yape.command(help="Start he venv shell")
-@CommonOptions.decorator
+@yape.command(help="Start a venv shell")
+@CommonOptions.decorator()
 @click.option("-k", "--keep-current-directory", help="Don't move into the venv directory", is_flag=True, default=False)
 def shell(keep_current_directory: bool = False, **kwargs):
     config = CommonOptions(kwargs).load()
     yape_commands.shell(config, use_source_dir=not keep_current_directory)
+
+
+@yape.command(
+    help="Run a command inside the venv shell",
+    context_settings={"ignore_unknown_options": True, "allow_extra_args": True},
+)
+@click.option("-k", "--keep-current-directory", help="Don't move into the venv directory", is_flag=True, default=False)
+@click.option("-p", "--path", help="The path to the source dir of the environment", default=os.curdir)
+@click.argument("command")
+@click.argument("args", nargs=-1)
+def run(command: str, args: List[str] = [], keep_current_directory: bool = False, **kwargs):
+    config = CommonOptions(kwargs).load()
+    config.load_virtualenv()
+    cmnd = [command] + list(args)
+    yape_commands.handover(config, *cmnd, use_source_dir=not keep_current_directory)
+
+
+@yape.command()
+@CommonOptions.decorator()
+def install(**kwargs):
+    config = CommonOptions(kwargs).load()
+    yape_commands.install(config)
 
 
 def run_cli_main():
