@@ -1,3 +1,9 @@
+# repo ignore
+.version
+.env
+.local
+.vscode
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
