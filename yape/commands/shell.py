@@ -1,0 +1,62 @@
+import os
+from typing import List
+from yape.config import YAPEConfig
+from yape.consts import ENTRY_ENVS
+
+
+def handover(
+    config: YAPEConfig,
+    *command: List[str],
+    use_venv_dir: bool = True,
+    shell_executable: str = None,
+):
+    """Replaces the current executing process with the executing command.
+
+    Args:
+        config (YAPEConfig): The yape config
+        use_venv_dir (bool, optional): If true, then use the config venv dir to start the process. Defaults to True.
+        shell_executable (str, optional): The shell executable to use. Defaults to None.
+    """
+    if use_venv_dir:
+        os.chdir(config.source_directory)
+
+    # Replacing current process with new shell.
+    if os.name != "nt":
+        shell_executable = shell_executable or os.environ.get("SHELL", "sh")
+    else:
+        shell_executable = shell_executable or "cmd.exe"
+
+    os.execve(shell_executable, command, env=ENTRY_ENVS)
+
+
+def shell(
+    config: YAPEConfig,
+    use_venv_dir: bool = False,
+    shell_executable: str = None,
+):
+    """Start a yape shell, with the venv enabled.
+
+    Args:
+        config (YAPEConfig): The yape config
+        use_venv_dir (bool, optional): If true, then use the config venv dir to start the process. Defaults to True.
+        shell_executable (str, optional): The shell executable to use. Defaults to None.
+    """
+    # Replacing current process with new shell.
+    command = []
+    if os.name != "nt":
+        shell_executable = shell_executable or os.environ.get("SHELL", "sh")
+        yape_activate = config.resolve_from_venv_directory("bin", "activate_yape_shell")
+        venv_activate = config.resolve_from_venv_directory("bin", "activate")
+        command = [shell_executable, yape_activate, venv_activate, shell_executable]
+    else:
+        config.load_virtualenv()
+        shell_executable = shell_executable or "cmd.exe"
+        command = [shell_executable]
+
+    handover(
+        shell_executable,
+        command,
+        env=ENTRY_ENVS,
+        shell_executable=shell_executable,
+        use_venv_dir=use_venv_dir,
+    )

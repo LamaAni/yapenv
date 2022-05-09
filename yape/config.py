@@ -1,53 +1,16 @@
+import importlib
 import re
 import yaml
 import json
 import os
 import sys
 from typing import Union, List, Dict
-from yape.common import deep_merge, yape_log
+from yape.consts import YAPE_CONFIG_FILES
+from yape.utils import deep_merge
+from yape.log import yape_log
 
-YAPE_CONFIG_FILES = re.split(r"[\s,]+", os.environ.get("YAPE_CONFIG_FILES", ".yape .yape.yaml .yape.yml .yape.json"))
 
-
-class YAPEPythonVersion(dict):
-    @property
-    def major(self) -> str:
-        return self.get("major", None)
-
-    @property
-    def minor(self) -> str:
-        return self.get("minor", None)
-
-    @property
-    def patch(self) -> str:
-        return self.get("patch", None)
-
-    @property
-    def version(self) -> str:
-        return ".".join(p for p in [self.major, self.minor, self.patch] if p is not None)
-
-    def __str__(self):
-        return self.version
-
-    def __repr__(self) -> str:
-        return self.version
-
-    @classmethod
-    def parse(cls, val: Union[str, float]):
-        val = val or sys.version
-        if not isinstance(val, str):
-            val = str(val)
-        # Parsing the version
-        parts = val.split(".")
-        ver = {}
-        if len(parts) > 0:
-            ver["major"] = parts[0]
-        if len(parts) > 1:
-            ver["minor"] = parts[1]
-        if len(parts) > 2:
-            ver["patch"] = parts[2]
-
-        return YAPEPythonVersion(ver)
+REQUIREMENTS_COLLECTION_NAME = "requirements"
 
 
 class YAPEConfigRequirement(dict):
@@ -72,6 +35,32 @@ class YAPEConfigRequirement(dict):
         assert isinstance(requirement, str), "Package dictionary must be a dict or string"
         return cls(package=requirement.strip())
 
+    @classmethod
+    def unique(cls, requirements: List[Union["YAPEConfigRequirement", dict]]):
+        """Removes duplicate requirements and validates a requirement list."""
+        requirements = [YAPEEnvironmentConfig(r) for r in requirements]
+        requirements.reverse()
+        cleaned = []
+        matched = set()
+        for r in requirements:
+            if not isinstance(r, YAPEConfigRequirement):
+                r = YAPEConfigRequirement(r)
+            if r.import_path is not None:
+                pkg_name = "import: " + r.import_path
+            else:
+                pkg_name = re.match(r"^[\w._-]+", r.package.strip())
+                if pkg_name is None:
+                    pkg_name = r.package
+                else:
+                    pkg_name = pkg_name[0]
+            if pkg_name in matched:
+                continue
+            matched.add(pkg_name)
+            cleaned.append(r)
+
+        cleaned.reverse()
+        return cleaned
+
 
 class YAPEEnvironmentConfig(dict):
     @property
@@ -84,6 +73,10 @@ class YAPEEnvironmentConfig(dict):
         self["source_path"] = val
 
     @property
+    def env_file(self) -> str:
+        return self.get("env_file", ".env")
+
+    @property
     def venv_directory(self) -> str:
         """The path of the virtual env directory"""
         return self.get("venv_directory", ".venv")
@@ -92,16 +85,15 @@ class YAPEEnvironmentConfig(dict):
     def venv_path(self) -> str:
         if os.path.isabs(self.venv_directory):
             return self.venv_directory
-        return os.path.abspath(os.path.join(os.path.dirname(self.source_path), self.venv_directory))
+        return os.path.abspath(os.path.join(self.source_directory, self.venv_directory))
 
     @property
-    def python(self) -> YAPEPythonVersion:
-        """The version of python to use"""
-        ver = self.get("python", None)
-        if not isinstance(ver, YAPEPythonVersion):
-            ver = YAPEPythonVersion.parse(ver)
-            self["python"] = ver
-        return ver
+    def python_version(self) -> str:
+        return self.get("python_version", None)
+
+    @python_version.setter
+    def python_version(self, val: str):
+        self["python_version"] = val
 
     @property
     def python_executable(self) -> str:
@@ -111,10 +103,10 @@ class YAPEEnvironmentConfig(dict):
     @property
     def requirements(self) -> List[YAPEConfigRequirement]:
         """A list of pip requirements"""
-        requirements = self.get("requirements", [])
+        requirements = self.get(REQUIREMENTS_COLLECTION_NAME, [])
         if any([not isinstance(r, YAPEConfigRequirement) for r in requirements]):
             requirements = [YAPEConfigRequirement.parse(r) for r in requirements]
-            self["requirements"] = requirements
+            self[REQUIREMENTS_COLLECTION_NAME] = requirements
         return requirements
 
     @property
@@ -125,7 +117,7 @@ class YAPEEnvironmentConfig(dict):
     def venv_args(self) -> List[str]:
         return self.get("venv_args", [])
 
-    def resolve_venv_path(self, *parts: List[str]):
+    def resolve_from_venv_directory(self, *parts: List[str]):
         return os.path.abspath(os.path.join(self.venv_path, *parts))
 
     def initialize_requirements(self):
@@ -156,41 +148,29 @@ class YAPEEnvironmentConfig(dict):
             elif req.package is not None:
                 resolved_requirements.append(req)
 
-        self["requirements"] = resolved_requirements
+        self[REQUIREMENTS_COLLECTION_NAME] = resolved_requirements
 
-    def initialize(self):
+    def initialize(
+        self,
+        resolve_imports: bool = True,
+    ):
         """Initializes the config"""
-        self.initialize_requirements()
-
-    def clean_duplicate_requirements(self):
-        requirements: List[YAPEConfigRequirement] = [] + self.requirements  # Last counts
-        requirements.reverse()
-        cleaned = []
-        matched = set()
-        for r in requirements:
-            pkg_name = re.match(r"^[\w._-]+", r.package.strip())
-            if pkg_name is None:
-                pkg_name = r.package
-            else:
-                pkg_name = pkg_name[0]
-            if pkg_name in matched:
-                continue
-            matched.add(pkg_name)
-            cleaned.append(r)
-
-        cleaned.reverse()
-        self["requirements"] = cleaned
+        if resolve_imports:
+            self.initialize_requirements()
 
 
 class YAPEConfig(YAPEEnvironmentConfig):
     @property
-    def install_path(self) -> str:
+    def source_directory(self) -> str:
         """Where to install"""
-        return self.get("install_path", None)
+        return self.get("source_directory", None)
 
-    @install_path.setter
-    def install_path(self, val: str):
-        self["install_path"] = val
+    @source_directory.setter
+    def source_directory(self, val: str):
+        self["source_directory"] = val
+
+    def resolve_from_source_directory(self, *parts: List[str]):
+        return os.path.abspath(os.path.join(self.source_directory, *parts))
 
     @property
     def environments(self) -> Dict[str, YAPEEnvironmentConfig]:
@@ -201,7 +181,46 @@ class YAPEConfig(YAPEEnvironmentConfig):
         return self.get("inherit", False)
 
     def stop_inheritance(self) -> bool:
-        return self.inherit
+        """If returns true, stops any further inheritance.
+        Overrideable function.
+        """
+        if self.inherit is not True:
+            return True
+        return False
+
+    def load_virtualenv(self):
+        """Loads the virtual environment into memory (using activate.py)."""
+        import_path = self.resolve_from_venv_directory("bin", "activate_this.py")
+        assert os.path.isfile(import_path), "Virtual env not found or virtualenv invalid @ " + self.venv_path
+        spec = importlib.util.spec_from_file_location(re.sub(r"[^\w]+", "_", import_path), import_path)
+        foo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(foo)
+
+    def initialize(
+        self,
+        source_directory: str = None,
+        resolve_imports: bool = True,
+        clean_duplicate_requirements: bool = True,
+    ):
+        super().initialize(
+            resolve_imports=resolve_imports,
+        )
+
+        if clean_duplicate_requirements:
+            self.clean_duplicate_requirements()
+
+        if source_directory:
+            self.source_directory = os.path.abspath(self.source_directory or source_directory)
+        self.python_version = self.python_version or f"{sys.version_info.major}.{sys.version_info.minor}"
+
+    def clean_duplicate_requirements(self):
+        configs = [self] + list(self.environments.values())
+        for c in configs:
+            if REQUIREMENTS_COLLECTION_NAME in c:
+                c[REQUIREMENTS_COLLECTION_NAME] = YAPEConfigRequirement.unique(c[REQUIREMENTS_COLLECTION_NAME])
+
+    def to_dictionary(self) -> dict:
+        return json.loads(json.dumps(self))
 
     @classmethod
     def load(
@@ -210,6 +229,8 @@ class YAPEConfig(YAPEEnvironmentConfig):
         environment: str = None,
         inherit_depth: int = -1,
         delete_environments: bool = True,
+        resolve_imports: bool = True,
+        clean_duplicate_requirements: bool = True,
     ):
         """Loads the YAPE environment configuration and initializes it.
 
@@ -222,6 +243,7 @@ class YAPEConfig(YAPEEnvironmentConfig):
             config_path = config_path[:-1]
 
         config_path = os.path.abspath(config_path)
+        yape_log.debug("Reading configuration, starting from " + config_path)
 
         merge_configs: List[YAPEConfig] = []
         inherit_stopped = False
@@ -249,6 +271,8 @@ class YAPEConfig(YAPEEnvironmentConfig):
                 if config.stop_inheritance():
                     inherit_stopped = True
 
+            yape_log.debug("Loaded config file: " + filepath)
+
             return config
 
         config_filepath_groups: List[List[str]] = []
@@ -257,8 +281,9 @@ class YAPEConfig(YAPEEnvironmentConfig):
             # If a direct file, this is not included in inheritance.
             load_config_from_file(config_path)
             config_path = os.path.dirname(config_path)
+            yape_log.debug("Config path was a file, loading parent directory config " + config_path)
 
-        install_path = config_path
+        source_directory = config_path
 
         while not inherit_stopped:
             config_filepath_groups.append(
@@ -270,7 +295,7 @@ class YAPEConfig(YAPEEnvironmentConfig):
             config_path = parent_path
 
         if inherit_depth is not None and inherit_depth > -1:
-            config_filepath_groups = config_filepath_groups[0 : inherit_depth + 1]
+            config_filepath_groups = config_filepath_groups[0 : inherit_depth + 1]  # noqa E203
 
         for fgroup in config_filepath_groups:
             for fpath in fgroup:
@@ -284,18 +309,30 @@ class YAPEConfig(YAPEEnvironmentConfig):
         # reversing the config merge order
         merge_configs.reverse()
 
+        environment_found = False
+
         for config in merge_configs:
             if environment is not None and environment in config.environments:
+                environment_found = True
                 deep_merge(config, config.environments[environment])
-            config.initialize()
+
+            config.initialize(resolve_imports=resolve_imports)
+
+        assert environment is None or environment_found, ValueError(
+            f"No environment named '{environment}' was found in the config (or parent configs)"
+        )
 
         merged = YAPEConfig(deep_merge({}, *merge_configs))
 
         if delete_environments and "environments" in merged:
             del merged["environments"]
 
-        merged.initialize()
-        merged.clean_duplicate_requirements()
-        merged.install_path = os.path.abspath(merged.install_path or install_path)
+        merged.initialize(
+            source_directory=source_directory,
+            resolve_imports=resolve_imports,
+            clean_duplicate_requirements=clean_duplicate_requirements,
+        )
+
+        yape_log.debug("Configuration loaded")
 
         return merged

@@ -1,0 +1,10 @@
+# Template document for .yape config
+
+# Get current python version (executing)
+requirements:
+  - import: requirements.txt
+
+environments:
+  dev:
+    requirements:
+      - import: requirements.dev.txt

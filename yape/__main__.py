@@ -2,11 +2,11 @@ import os
 
 ENTRY_ENVS = os.environ.copy()
 
-from yape import common
+from yape import consts
 
-common.ENTRY_ENVS = ENTRY_ENVS
+consts.ENTRY_ENVS = ENTRY_ENVS
 
-from yape.cli import yape
+from yape.cli import run_cli_main
 
 if __name__ == "__main__":
-    yape()
+    run_cli_main()
