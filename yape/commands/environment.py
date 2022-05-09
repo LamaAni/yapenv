@@ -1,10 +1,25 @@
 import json
 import os
+import shutil
 from typing import List
 import yaml
+from yape.log import yape_log
 from yape.consts import YAPE_CONFIG_FILES
 from yape.config import YAPEConfig
 from yape.utils import deep_merge, resolve_template, touch
+
+
+def delete(config: YAPEConfig, force: bool = False):
+    if config.has_virtual_environment():
+        if not force:
+            yape_log.warn("You are about to delete the virtual environment @ " + config.venv_path)
+            if input("WARNING: are you sure? (y/n)") != "y":
+                yape_log.info("Aborted")
+                return
+        shutil.rmtree(config.venv_path)
+        yape_log.info("Delete virtual environment folder @ " + config.venv_path)
+    else:
+        yape_log.warn("No virtual environment @ " + config.venv_path)
 
 
 def init(

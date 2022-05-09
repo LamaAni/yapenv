@@ -174,9 +174,11 @@ def init(
 
 
 @yape.command("delete", help="Delete the virtual environment installation")
+@click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
 @CommonOptions.decorator
-def delete(**kwargs):
+def delete(force: bool = False, **kwargs):
     config = CommonOptions(kwargs).load()
+    yape_commands.delete(config, force=force)
 
 
 @yape.command()
@@ -223,7 +225,7 @@ def config(resolve: bool = False, **kwargs):
 @click.option("-k", "--keep-current-directory", help="Don't move into the venv directory", is_flag=True, default=False)
 def shell(keep_current_directory: bool = False, **kwargs):
     config = CommonOptions(kwargs).load()
-    yape_commands.shell(config, use_venv_dir=keep_current_directory)
+    yape_commands.shell(config, use_source_dir=not keep_current_directory)
 
 
 def run_cli_main():

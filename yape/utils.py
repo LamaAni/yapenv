@@ -72,9 +72,17 @@ def run_python_module(
     envs: dict = {},
     throw_errors: bool = True,
     include_process_envs: bool = True,
+    executable: str = None,
+    use_vevn: bool = True,
 ):
+    if executable is None:
+        if use_vevn and os.environ.get("VIRTUAL_ENV", None) is not None:
+            executable = "python"
+        else:
+            executable = sys.executable
+
     return run_shell_command(
-        sys.executable,
+        executable,
         "-m",
         module_name,
         *args,

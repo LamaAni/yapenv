@@ -10,7 +10,7 @@ def virtualenv_args(config: YAPEConfig):
         config (YAPEConfig): The yape config.
     """
     return clean_args(
-        *option_or_empty("--python", config.python_executable or config.python_version.version),
+        *option_or_empty("--python", config.python_executable or config.python_version),
         *config.venv_args,
         config.venv_path,
     )
@@ -25,4 +25,4 @@ def virtualenv_create(config: YAPEConfig):
     yape_log.info("Creating virtualenv @ " + config.venv_path)
     cmnd = ["virtualenv", *virtualenv_args(config)]
     yape_log.debug(str(cmnd))
-    run_python_module(*cmnd)
+    run_python_module(*cmnd, use_vevn=False)

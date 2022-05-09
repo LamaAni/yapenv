@@ -28,7 +28,9 @@ class YAPEConfigRequirement(dict):
         return self.get("import_path", self.get("import", None))
 
     @classmethod
-    def parse(cls, requirement: Union[str, dict]):
+    def parse(cls, requirement: Union[str, dict, "YAPEConfigRequirement"]):
+        if isinstance(requirement, cls):
+            return requirement
         if isinstance(requirement, dict):
             return cls(requirement)
 
@@ -38,13 +40,11 @@ class YAPEConfigRequirement(dict):
     @classmethod
     def unique(cls, requirements: List[Union["YAPEConfigRequirement", dict]]):
         """Removes duplicate requirements and validates a requirement list."""
-        requirements = [YAPEEnvironmentConfig(r) for r in requirements]
+        requirements = [YAPEConfigRequirement.parse(r) for r in requirements]
         requirements.reverse()
         cleaned = []
         matched = set()
         for r in requirements:
-            if not isinstance(r, YAPEConfigRequirement):
-                r = YAPEConfigRequirement(r)
             if r.import_path is not None:
                 pkg_name = "import: " + r.import_path
             else:
@@ -80,12 +80,6 @@ class YAPEEnvironmentConfig(dict):
     def venv_directory(self) -> str:
         """The path of the virtual env directory"""
         return self.get("venv_directory", ".venv")
-
-    @property
-    def venv_path(self) -> str:
-        if os.path.isabs(self.venv_directory):
-            return self.venv_directory
-        return os.path.abspath(os.path.join(self.source_directory, self.venv_directory))
 
     @property
     def python_version(self) -> str:
@@ -162,12 +156,18 @@ class YAPEEnvironmentConfig(dict):
 class YAPEConfig(YAPEEnvironmentConfig):
     @property
     def source_directory(self) -> str:
-        """Where to install"""
+        """The directory path to the source for the virtual environment (where the config is)"""
         return self.get("source_directory", None)
 
     @source_directory.setter
     def source_directory(self, val: str):
         self["source_directory"] = val
+
+    @property
+    def venv_path(self) -> str:
+        if os.path.isabs(self.venv_directory):
+            return self.venv_directory
+        return os.path.abspath(os.path.join(self.source_directory, self.venv_directory))
 
     def resolve_from_source_directory(self, *parts: List[str]):
         return os.path.abspath(os.path.join(self.source_directory, *parts))
@@ -221,6 +221,9 @@ class YAPEConfig(YAPEEnvironmentConfig):
 
     def to_dictionary(self) -> dict:
         return json.loads(json.dumps(self))
+
+    def has_virtual_environment(self) -> dict:
+        return os.path.isdir(self.venv_path)
 
     @classmethod
     def load(

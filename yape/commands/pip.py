@@ -26,4 +26,4 @@ def pip_install(config: YAPEConfig):
     config.load_virtualenv()
     cmnd = ["pip", *pip_command_args(config)]
     yape_log.debug(str(cmnd))
-    run_python_module(*cmnd)
+    run_python_module(*cmnd, use_vevn=True)
