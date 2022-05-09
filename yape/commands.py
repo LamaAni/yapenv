@@ -57,6 +57,10 @@ def pip_install(config: YAPEConfig):
     run_shell_command(*cmnd)
 
 
+def initialize_folder(config: YAPEConfig):
+    pass
+
+
 def start_shell(config: YAPEConfig, keep_current_directory: bool = False):
     shell = os.environ.get("SHELL", "sh")
     if not keep_current_directory:
