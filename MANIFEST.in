@@ -1,1 +1,1 @@
-yape/templates
+include yape/templates/*

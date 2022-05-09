@@ -43,6 +43,7 @@ setup(
     author="Zav Shotan",
     keywords="environment, venv, virtualenv, pyenv, poetry",
     packages=packages,
+    include_package_data=True,
     entry_points={
         "console_scripts": [
             "yape=yape.__main__:run_cli_main",
