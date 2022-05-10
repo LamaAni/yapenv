@@ -10,13 +10,20 @@ from yape.commands.virtualenv import virtualenv_create
 from yape.commands.pip import pip_install
 
 
+def check_delete_environment(config: YAPEConfig, force: bool = False):
+    if force:
+        return True
+    yape_log.warn("You are about to delete the virtual environment @ " + config.venv_path)
+    if input("WARNING: are you sure? (y/n) ") != "y":
+        return False
+    return True
+
+
 def delete(config: YAPEConfig, force: bool = False):
     if config.has_virtual_environment():
-        if not force:
-            yape_log.warn("You are about to delete the virtual environment @ " + config.venv_path)
-            if input("WARNING: are you sure? (y/n)") != "y":
-                yape_log.info("Aborted")
-                return
+        if not check_delete_environment(config, force=force):
+            yape_log.info("Aborted")
+            return
         shutil.rmtree(config.venv_path)
         yape_log.info("Delete virtual environment folder @ " + config.venv_path)
     else:
@@ -90,8 +97,13 @@ def init(
 def install(
     config: YAPEConfig,
     reset: bool = False,
+    force: bool = False,
 ):
-    if not config.has_virtual_environment():
+    if reset and config.has_virtual_environment():
+        delete(config, force=force)
+        yape_log.info("Deleted current virtual env")
+
+    if reset or not config.has_virtual_environment():
         virtualenv_create(config)
 
     if len(config.requirements) > 0:

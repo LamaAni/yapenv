@@ -6,7 +6,7 @@ import os
 import sys
 from typing import Union, List, Dict
 from yape.consts import YAPE_CONFIG_FILES
-from yape.utils import deep_merge
+from yape.utils import deep_merge, resolve_path
 from yape.log import yape_log
 
 
@@ -77,6 +77,10 @@ class YAPEEnvironmentConfig(dict):
         return self.get("env_file", ".env")
 
     @property
+    def pip_config_path(self) -> str:
+        return self.get("pip_config_path", None)
+
+    @property
     def venv_directory(self) -> str:
         """The path of the virtual env directory"""
         return self.get("venv_directory", ".venv")
@@ -110,9 +114,6 @@ class YAPEEnvironmentConfig(dict):
     @property
     def venv_args(self) -> List[str]:
         return self.get("venv_args", [])
-
-    def resolve_from_venv_directory(self, *parts: List[str]):
-        return os.path.abspath(os.path.join(self.venv_path, *parts))
 
     def initialize_requirements(self):
         """Resolves the internal requirement imports and cleans up the requirements list"""
@@ -169,8 +170,11 @@ class YAPEConfig(YAPEEnvironmentConfig):
             return self.venv_directory
         return os.path.abspath(os.path.join(self.source_directory, self.venv_directory))
 
+    def resolve_from_venv_directory(self, *parts: List[str]):
+        return resolve_path(*parts, root_directory=self.venv_path)
+
     def resolve_from_source_directory(self, *parts: List[str]):
-        return os.path.abspath(os.path.join(self.source_directory, *parts))
+        return resolve_path(*parts, root_directory=self.source_directory)
 
     @property
     def environments(self) -> Dict[str, YAPEEnvironmentConfig]:

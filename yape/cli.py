@@ -156,30 +156,6 @@ def virtualenv_create(**kwargs):
     yape_commands.virtualenv_create(config)
 
 
-@yape.command("init", help="Initializes the yape configuration in a folder")
-@click.option("-p", "--python-version", help="Use this python version", default=None)
-@click.option("-f", "--config-filename", help="Override the configuration filename", default=None)
-@click.option("--no-requirement-files", help="Do not initialize with requirement files", is_flag=True, default=None)
-@click.option("--reset", help="Delete current configuration and reset it.", is_flag=True, default=False)
-@CommonOptions.decorator()
-def init(
-    reset=False,
-    python_version: str = None,
-    config_filename: str = None,
-    no_requirement_files: bool = False,
-    **kwargs,
-):
-    config = CommonOptions(kwargs).load(resolve_imports=False)
-    yape_commands.init(
-        active_config=config,
-        merge_with_current=not reset,
-        python_version=python_version,
-        config_filename=config_filename,
-        add_requirement_files=not no_requirement_files,
-    )
-    yape_log.info("yape configuration initialized @ " + config.source_directory)
-
-
 @yape.command("delete", help="Delete the virtual environment installation")
 @click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
 @CommonOptions.decorator()
@@ -229,12 +205,62 @@ def run(command: str, args: List[str] = [], keep_current_directory: bool = False
     yape_commands.handover(config, *cmnd, use_source_dir=not keep_current_directory)
 
 
-@yape.command(help="Initialize the pip packages and install the packages using pipenv")
+@yape.command("install", help="Initialize the pip packages and install the packages using pipenv")
 @click.option("-r", "--reset", help="Reset the virtual environment", default=os.curdir)
+@click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
 @CommonOptions.decorator()
-def install(reset: bool = False, **kwargs):
+def install(
+    reset: bool = False,
+    force: bool = False,
+    **kwargs,
+):
     config = CommonOptions(kwargs).load()
-    yape_commands.install(config, reset=reset)
+    yape_commands.install(
+        config,
+        reset=reset,
+        force=force,
+    )
+
+
+@yape.command("init", help="Initializes the yape configuration in a folder")
+@click.option("-p", "--python-version", help="Use this python version", default=None)
+@click.option("-c", "--config-filename", help="Override the configuration filename", default=None)
+@click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
+@click.option("--no-install", help="Do not install after initializing", is_flag=True, default=None)
+@click.option("--no-requirement-files", help="Do not initialize with requirement files", is_flag=True, default=None)
+@click.option("--reset", help="Delete current configuration and reset it.", is_flag=True, default=False)
+@CommonOptions.decorator()
+def init(
+    reset=False,
+    python_version: str = None,
+    config_filename: str = None,
+    no_requirement_files: bool = False,
+    no_install: bool = False,
+    force: bool = False,
+    **kwargs,
+):
+    config = CommonOptions(kwargs).load(resolve_imports=False)
+    if not no_install and not yape_commands.check_delete_environment(config, force=force):
+        yape_log.info("Aborted")
+        return
+
+    yape_commands.init(
+        active_config=config,
+        merge_with_current=not reset,
+        python_version=python_version,
+        config_filename=config_filename,
+        add_requirement_files=not no_requirement_files,
+    )
+
+    if not no_install:
+        config = CommonOptions(kwargs).load(resolve_imports=True)
+        yape_commands.install(
+            config,
+            reset=True,
+            force=True,  # already checked
+        )
+
+    yape_log.info("Virtual environment initialized @ " + config.source_directory)
 
 
 def run_cli_main():
