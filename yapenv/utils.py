@@ -20,6 +20,7 @@ def clean_args(*args: str):
 
 
 def quote_no_expand_args(*args: str):
+    """Quote arguments that have no spaces/tabs/newlines in them"""
     quoted = []
     for a in args:
         if re.match(r"[\s]", a) is None:
