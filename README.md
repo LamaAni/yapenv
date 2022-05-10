@@ -1,6 +1,10 @@
 # yapenv
-### Yet Another Python Environment manager
-###### * with less opinions
+
+## Alpha
+
+WARNING: This repo is still in alpha development phase and structure is subject to change.
+
+Yet Another Python Environment manager (with less options).
 
 ## Install
 
@@ -90,3 +94,19 @@ requirements:
 - package: celery==5.2.6
 - Flask>=2.1.2
 ```
+
+## Contribution
+
+Feel free to ping me in issues or directly on LinkedIn to contribute.
+
+## Future implementation
+
+We plan to support multiple python version per environment.
+
+Looking for help on this subject.
+
+## Licence
+
+Copyright ©
+`Zav Shotan`, `Patrick Huber` and other [contributors](graphs/contributors).
+It is free software, released under the MIT licence, and may be redistributed under the terms specified in `LICENSE`.
