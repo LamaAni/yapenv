@@ -114,7 +114,7 @@ def install(
     config: YAPENVConfig,
     reset: bool = False,
     force: bool = False,
-    packages: List[str] = None,
+    packages: List[str] = [],
 ):
     """Install the yapenv config in the virtual environment.
     Will create the environment if it dose not exist.
