@@ -1,5 +1,6 @@
 # yapenv
-Yet another (less opinionated) python environment
+### Yet Another Python Environment manager
+###### * with less opinions
 
 ## Install
 
