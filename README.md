@@ -12,6 +12,12 @@ Yet Another Python Environment manager (with less options).
 pip install yapenv
 ```
 
+Run in your project directory
+
+```
+yapenv init
+```
+
 ## Configuration
 
 By default `yapenv` uses the following configuration file names.
