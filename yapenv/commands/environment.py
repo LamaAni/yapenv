@@ -132,13 +132,6 @@ def install(
 
     if len(config.requirements) > 0:
         pip_install(config)
+        yapenv_log.info("Success")
     else:
         yapenv_log.warn("No requirements found in config. Skipping pip install")
-
-    yapenv_log.info("Copying yapenv shell activation script")
-    shutil.copyfile(
-        resolve_template("activate_yapenv_shell"),
-        config.resolve_from_venv_directory("bin", "activate_yapenv_shell"),
-    )
-
-    yapenv_log.info("Venv ready")

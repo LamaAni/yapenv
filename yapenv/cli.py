@@ -29,7 +29,11 @@ class CommonOptions(dict):
     def env_file(self) -> str:
         return self.get("env_file", os.environ.get("YAPENV_ENV_FILE", ".env"))
 
-    def load(self, resolve_imports: bool = True) -> YAPENVConfig:
+    def load(
+        self,
+        resolve_imports: bool = True,
+        ignore_environment: bool = False,
+    ) -> YAPENVConfig:
         env_file = resolve_path(self.env_file)
         if os.path.isfile(env_file):
             yapenv_log.debug("Loading environment variables from: " + env_file)
@@ -37,7 +41,7 @@ class CommonOptions(dict):
 
         config = YAPENVConfig.load(
             self.path,
-            environment=self.environment,
+            environment=None if ignore_environment else self.environment,
             inherit_depth=self.inherit_depth,
             resolve_imports=resolve_imports,
         )
@@ -77,15 +81,15 @@ class CommonOptions(dict):
 
 class FormatOptions(dict):
     @property
-    def quote(self) -> bool:
-        return self.get("quote", False)
+    def no_quote(self) -> bool:
+        return self.get("no_quote", False)
 
     @property
     def format(self) -> PrintFormat:
         return self.get("format", PrintFormat.cli)
 
     def print(self, val: Union[list, dict]):
-        return get_print_formatted(self.format, val, self.quote)
+        return get_print_formatted(self.format, val, not self.no_quote)
 
     @classmethod
     def decorator(cls, default_format: PrintFormat = PrintFormat.cli):
@@ -97,7 +101,7 @@ class FormatOptions(dict):
                     type=PrintFormat,
                     default=default_format,
                 ),
-                click.option("--quote", help="Quote cli arguments if needed", is_flag=True, default=False),
+                click.option("--no-quote", help="Do not quote cli arguments", is_flag=True, default=False),
             ]:
                 fn = opt(*args)
             return fn
@@ -105,7 +109,7 @@ class FormatOptions(dict):
         return apply
 
 
-@click.group(help=f"Yet Another Python Environment manager\nversion: {YAPENV_VERSION}")
+@click.group(help=f"""Yet Another Python Environment manager (version: {YAPENV_VERSION})""")
 def yapenv():
     pass
 
@@ -239,8 +243,14 @@ def init(
     force: bool = False,
     **kwargs,
 ):
-    config = CommonOptions(kwargs).load(resolve_imports=False)
-    if not no_install and not yapenv_commands.check_delete_environment(config, force=force):
+    options = CommonOptions(kwargs)
+    config = options.load(resolve_imports=False, ignore_environment=True)
+    if (
+        not no_install
+        and reset
+        and config.has_virtual_environment()
+        and not yapenv_commands.check_delete_environment(config, force=force)
+    ):
         yapenv_log.info("Aborted")
         return
 
@@ -253,10 +263,16 @@ def init(
     )
 
     if not no_install:
+        # Reload config
         config = CommonOptions(kwargs).load(resolve_imports=True)
+
+        # Update the venv files.
+        if not reset and config.has_virtual_environment():
+            yapenv_commands.virtualenv_update_files(config)
+
         yapenv_commands.install(
             config,
-            reset=True,
+            reset=reset,
             force=True,  # already checked
         )
 
