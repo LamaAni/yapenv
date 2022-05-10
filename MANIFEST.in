@@ -1,2 +1,2 @@
-include yape/templates/*
-include yape/.version
+include yapenv/templates/*
+include yapenv/.version

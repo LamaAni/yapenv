@@ -1,4 +1,4 @@
-# Template document for .yape config
+# Template document for .yapenv config
 
 # Get current python version (executing)
 requirements:
