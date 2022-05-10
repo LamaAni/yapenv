@@ -60,7 +60,7 @@ class CommonOptions(dict):
                 opts.append(
                     click.option(
                         "--path",
-                        help="The path to the virtual environment source folder",
+                        help="The path to the yape config folder",
                         default=os.curdir,
                     )
                 )
