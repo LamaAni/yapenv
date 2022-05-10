@@ -45,16 +45,11 @@ import: null or str # Path to requirements.txt to import
 
 ### Environment Variables
 
-- `VERSION_PATH`: File path to the `.version` file.
-- `SETUP_VERSION`: Version string used by `setuptools.setup.version`.
 - `YAPENV_ENV_FILE`: Env file to load when running commands (default=`.env`).
 - `YAPENV_FULL_ERRORS`: Boolean that tells `yapenv` to dump full traceback (default=`"false"`).
 - `YAPENV_CONFIG_FILES`: Array of yapenv config file names (default=`".yapenv.yaml .yapenv.yml .yapenv .yapenv.json"`).
 - `NO_COLOR`: Boolean that disables colorized logging output (default="`false`")
 - `VIRTUAL_ENV`: File path of python virtualenv (default=`None`)
-- `SHELL`: Default command line shell.
-    - Linux Default: `sh`
-    - Windows Default: `cmd.exe`
 
 ### Example Configurations
 
