@@ -1,5 +1,6 @@
 # yapenv
-Yet another (less opinionated) python environment
+### Yet Another Python Environment manager
+###### * with less opinions
 
 ## Install
 
@@ -20,27 +21,29 @@ By default `yapenv` uses the following configuration file names.
 
 ```yaml
 python_version: "3.9" # Python version to use
-python_executable: null # Overrides python_version
-venv_directory: .venv # Virtualenv path
-environments: [] # Possible environments, see environment configs
-pip_config_path: null # Path to the pip.conf to use.
-
-# [Any environment configuration argument is also valid]
+python_executable: null # Path to python executable (overrides python_version)
+venv_directory: .venv # Path to created virtualenv directory
+environments: [] # Optional environments, see environment configs
+pip_config_path: null # Path to the pip.conf file
+# [Any environment configuration argument is also valid here]
 ```
 ### Environment Configuration
 
 ```yaml
-env_file: .env # Env file to load when running commands.
-pip_install_args: [] # List of arguments for pip install
-virtualenv_args: [] # list of arguments for virtualenv.
-requirements: [] # List of requirements, see requirement configuration (or string)
+environments:
+  env_file: .env # Env file to load when running commands
+  pip_install_args: [] # List of arguments for pip install command
+  virtualenv_args: [] # list of arguments for virtualenv command
+  requirements: [] # List of requirements (see requirement configuration)
 ```
 
 ### Requirement Configuration
 
 ```yaml
-package: null or str # Name of package.
-import: null or str # Path to requirements.txt to import
+requirements:
+- package: mypackage # Pip package name string
+- myotherpackage==0.0.1 # Pip package name string
+- import: requirements.txt # Path to requirements.txt to import
 ```
 
 ### Environment Variables
@@ -75,7 +78,6 @@ environments:
     - package: flake8
     - package: black
 requirements:
-- package:
-  - celery==5.2.6
-  - Flask>=2.1.2
+- package: celery==5.2.6
+- Flask>=2.1.2
 ```
