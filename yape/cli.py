@@ -111,6 +111,14 @@ def yape():
     pass
 
 
+@yape.command("version", help="Show the yape version")
+def version():
+    version_path = os.path.join(os.path.dirname(__file__), ".version")
+    if os.path.isfile(version_path):
+        with open(version_path, "r") as raw:
+            print(raw.read())
+
+
 @yape.group("pip", help="Run pip commands through yape")
 def pip_command():
     pass
