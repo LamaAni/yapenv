@@ -1,4 +1,3 @@
-import importlib
 import re
 import yaml
 import json
@@ -194,6 +193,8 @@ class YAPEConfig(YAPEEnvironmentConfig):
 
     def load_virtualenv(self):
         """Loads the virtual environment into memory (using activate.py)."""
+        import importlib.util
+
         import_path = self.resolve_from_venv_directory("bin", "activate_this.py")
         assert os.path.isfile(import_path), "Virtual env not found or virtualenv invalid @ " + self.venv_path
         spec = importlib.util.spec_from_file_location(re.sub(r"[^\w]+", "_", import_path), import_path)
