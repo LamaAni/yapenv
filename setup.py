@@ -24,7 +24,7 @@ else:
     logging.info("Version file not found @ " + version_file_path)
     logging.info("Using default version debug")
 
-version = version or "debug"
+version = version or os.environ.get("SETUP_VERSION", "debug")
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
