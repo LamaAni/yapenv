@@ -75,6 +75,7 @@ environments:
     - package: flake8
     - package: black
 requirements:
-- package: celery
-- package: Flask
+- package:
+  - celery==5.2.6
+  - Flask>=2.1.2
 ```
