@@ -78,28 +78,6 @@ class YAPEEnvironmentConfig(dict):
         return self.get("env_file", ".env")
 
     @property
-    def pip_config_path(self) -> str:
-        return self.get("pip_config_path", None)
-
-    @property
-    def venv_directory(self) -> str:
-        """The path of the virtual env directory"""
-        return self.get("venv_directory", ".venv")
-
-    @property
-    def python_version(self) -> str:
-        return self.get("python_version", None)
-
-    @python_version.setter
-    def python_version(self, val: str):
-        self["python_version"] = val
-
-    @property
-    def python_executable(self) -> str:
-        """The path to the python executable to use"""
-        return self.get("python_executable", None)
-
-    @property
     def requirements(self) -> List[YAPEConfigRequirement]:
         """A list of pip requirements"""
         requirements = self.get(REQUIREMENTS_COLLECTION_NAME, [])
@@ -113,8 +91,8 @@ class YAPEEnvironmentConfig(dict):
         return self.get("pip_install_args", [])
 
     @property
-    def venv_args(self) -> List[str]:
-        return self.get("venv_args", [])
+    def virtualenv_args(self) -> List[str]:
+        return self.get("virtualenv_args", [])
 
     def initialize_requirements(self):
         """Resolves the internal requirement imports and cleans up the requirements list"""
@@ -166,11 +144,33 @@ class YAPEConfig(YAPEEnvironmentConfig):
         self["source_directory"] = val
 
     @property
+    def venv_directory(self) -> str:
+        """The path of the virtual env directory"""
+        return self.get("venv_directory", ".venv")
+
+    @property
     def venv_path(self) -> str:
         """The path to the virtual environment"""
         if os.path.isabs(self.venv_directory):
             return self.venv_directory
         return os.path.abspath(os.path.join(self.source_directory, self.venv_directory))
+
+    @property
+    def pip_config_path(self) -> str:
+        return self.get("pip_config_path", None)
+
+    @property
+    def python_version(self) -> str:
+        return self.get("python_version", None)
+
+    @python_version.setter
+    def python_version(self, val: str):
+        self["python_version"] = val
+
+    @property
+    def python_executable(self) -> str:
+        """The path to the python executable to use"""
+        return self.get("python_executable", None)
 
     def resolve_from_venv_directory(self, *parts: List[str]):
         """Resolve path with the virtual env directory as root path"""

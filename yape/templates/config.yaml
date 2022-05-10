@@ -1,7 +1,7 @@
 # Template document for .yape config
 
 # Get current python version (executing)
-directory: .venv
+venv_directory: .venv
 requirements:
   - import: requirements.txt
 

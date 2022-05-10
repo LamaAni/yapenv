@@ -12,7 +12,7 @@ def virtualenv_args(config: YAPEConfig):
     """
     return clean_args(
         *option_or_empty("--python", config.python_executable or config.python_version),
-        *config.venv_args,
+        *config.virtualenv_args,
         config.venv_path,
     )
 

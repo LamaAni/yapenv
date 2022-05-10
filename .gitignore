@@ -1,5 +1,4 @@
 # repo ignore
-.version
 .env
 .local
 .vscode
