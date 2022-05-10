@@ -29,7 +29,11 @@ class CommonOptions(dict):
     def env_file(self) -> str:
         return self.get("env_file", os.environ.get("YAPENV_ENV_FILE", ".env"))
 
-    def load(self, resolve_imports: bool = True) -> YAPENVConfig:
+    def load(
+        self,
+        resolve_imports: bool = True,
+        ignore_environment: bool = False,
+    ) -> YAPENVConfig:
         env_file = resolve_path(self.env_file)
         if os.path.isfile(env_file):
             yapenv_log.debug("Loading environment variables from: " + env_file)
@@ -37,7 +41,7 @@ class CommonOptions(dict):
 
         config = YAPENVConfig.load(
             self.path,
-            environment=self.environment,
+            environment=None if ignore_environment else self.environment,
             inherit_depth=self.inherit_depth,
             resolve_imports=resolve_imports,
         )
@@ -239,7 +243,8 @@ def init(
     force: bool = False,
     **kwargs,
 ):
-    config = CommonOptions(kwargs).load(resolve_imports=False)
+    options = CommonOptions(kwargs)
+    config = options.load(resolve_imports=False, ignore_environment=True)
     if (
         not no_install
         and reset

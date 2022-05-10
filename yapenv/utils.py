@@ -150,8 +150,6 @@ def run_shell_commands(
     run_env = os.environ.copy() if include_process_envs else {}
     run_env.update(envs or {})
 
-    print(" ".join(shell_command))
-
     rslt = subprocess.run(
         " ".join(shell_command),
         shell=True,

@@ -6,5 +6,4 @@ pip_config_path: pip.conf
 python_version: '3.9'
 requirements:
 - import: requirements.txt
-- import: requirements.dev.txt
 venv_directory: .venv

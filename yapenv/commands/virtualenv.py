@@ -36,3 +36,4 @@ def virtualenv_create(config: YAPENVConfig):
             yapenv_log.warn("Could not set custom config path, pip_config_path not found @ " + config_path)
         else:
             os.symlink(config_path, config.resolve_from_venv_directory("pip.conf"))
+            yapenv_log.info("Linked virtual env pip.conf -> " + config_path)

@@ -29,8 +29,6 @@ else:
 
 version = version or os.environ.get("SETUP_VERSION", "debug")
 
-print(packages)
-
 setup(
     name="yapenv",  # Required
     version=version,  # Required
