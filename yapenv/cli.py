@@ -105,7 +105,7 @@ class FormatOptions(dict):
         return apply
 
 
-@click.group(help=f"Yet Another Python Environment manager\nversion: {YAPENV_VERSION}")
+@click.group(help=f"""Yet Another Python Environment manager (version: {YAPENV_VERSION})""")
 def yapenv():
     pass
 
