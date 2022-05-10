@@ -1,9 +1,10 @@
 directory: .venv
-pip_config_path: pip.conf
 environments:
   dev:
     requirements:
     - import: requirements.dev.txt
+pip_config_path: pip.conf
 python_version: '3.9'
 requirements:
 - import: requirements.txt
+venv_directory: .venv
