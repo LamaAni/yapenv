@@ -148,7 +148,8 @@ def pip_command():
 
 @pip_command.command(
     "args",
-    help="Create a pip install command for the yapenv config.  If no packages specified, uses the yapenv configuration ",
+    help="Create a pip install command for the yapenv config. "
+    + "If no packages specified, uses the yapenv configuration",
 )
 @FormatOptions.decorator(PrintFormat.cli, allow_quote=False)
 @CommonOptions.decorator(path_as_option=True)
