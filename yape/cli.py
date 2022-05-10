@@ -1,11 +1,10 @@
-import json
 import os
 from typing import List, Union
 import click
-import shutil
 from dotenv import load_dotenv
 import yape.commands as yape_commands
 from yape.log import yape_log
+from yape.consts import YAPE_VERSION
 from yape.format import PrintFormat, get_print_formatted
 from yape.config import YAPEConfig
 from yape.utils import resolve_path
@@ -106,17 +105,14 @@ class FormatOptions(dict):
         return apply
 
 
-@click.group()
+@click.group(help=f"Yet Another Python Environment manager\nversion: {YAPE_VERSION}")
 def yape():
     pass
 
 
 @yape.command("version", help="Show the yape version")
 def version():
-    version_path = os.path.join(os.path.dirname(__file__), ".version")
-    if os.path.isfile(version_path):
-        with open(version_path, "r") as raw:
-            print(raw.read())
+    print(YAPE_VERSION)
 
 
 @yape.group("pip", help="Run pip commands through yape")
@@ -231,13 +227,6 @@ def run(command: str, args: List[str] = [], keep_current_directory: bool = False
     config.load_virtualenv()
     cmnd = [command] + list(args)
     yape_commands.handover(config, *cmnd, use_source_dir=not keep_current_directory)
-
-
-@yape.command()
-@CommonOptions.decorator()
-def install(**kwargs):
-    config = CommonOptions(kwargs).load()
-    yape_commands.install(config)
 
 
 @yape.command()

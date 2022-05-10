@@ -1,2 +1,2 @@
-include yape/templates/*
-include .version
+recursive-include yape/templates
+include yape/.version
