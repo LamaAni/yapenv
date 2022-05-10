@@ -206,7 +206,7 @@ def run(command: str, args: List[str] = [], keep_current_directory: bool = False
 
 
 @yape.command("install", help="Initialize the pip packages and install the packages using pipenv")
-@click.option("-r", "--reset", help="Reset the virtual environment", default=os.curdir)
+@click.option("-r", "--reset", help="Reset the virtual environment", is_flag=True, default=False)
 @click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
 @CommonOptions.decorator()
 def install(
@@ -226,8 +226,8 @@ def install(
 @click.option("-p", "--python-version", help="Use this python version", default=None)
 @click.option("-c", "--config-filename", help="Override the configuration filename", default=None)
 @click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
-@click.option("--no-install", help="Do not install after initializing", is_flag=True, default=None)
-@click.option("--no-requirement-files", help="Do not initialize with requirement files", is_flag=True, default=None)
+@click.option("--no-install", help="Do not install after initializing", is_flag=True, default=False)
+@click.option("--no-requirement-files", help="Do not initialize with requirement files", is_flag=True, default=False)
 @click.option("--reset", help="Delete current configuration and reset it.", is_flag=True, default=False)
 @CommonOptions.decorator()
 def init(
