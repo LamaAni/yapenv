@@ -24,7 +24,7 @@ jobs:
       - name: Prepare version
         run: |
           echo "Version number: ${GITHUB_REF##*/}"
-          echo "${GITHUB_REF##*/}" > package_version.txt || exit $?
+          echo "${GITHUB_REF##*/}" > .version || exit $?
           ls
         env:
           GITHUB_BRANCH: ${{ github.ref }}
