@@ -101,17 +101,17 @@ requirements:
 - Flask>=2.1.2
 ```
 
-## Contribution
+# Contribution
 
 Feel free to ping me in issues or directly on LinkedIn to contribute.
 
-## Future implementation
+# Future implementation
 
 We plan to support multiple python version per environment.
 
 Looking for help on this subject.
 
-## Licence
+# Licence
 
 Copyright ©
 `Zav Shotan`, `Patrick Huber` and other [contributors](graphs/contributors).
