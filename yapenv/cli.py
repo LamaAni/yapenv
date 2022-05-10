@@ -263,7 +263,13 @@ def init(
     )
 
     if not no_install:
+        # Reload config
         config = CommonOptions(kwargs).load(resolve_imports=True)
+
+        # Update the venv files.
+        if not reset and config.has_virtual_environment():
+            yapenv_commands.virtualenv_update_files(config)
+
         yapenv_commands.install(
             config,
             reset=reset,
