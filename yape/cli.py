@@ -229,11 +229,12 @@ def run(command: str, args: List[str] = [], keep_current_directory: bool = False
     yape_commands.handover(config, *cmnd, use_source_dir=not keep_current_directory)
 
 
-@yape.command()
+@yape.command(help="Initialize the pip packages and install the packages using pipenv")
+@click.option("-r", "--reset", help="Reset the virtual environment", default=os.curdir)
 @CommonOptions.decorator()
-def install(**kwargs):
+def install(reset: bool = False, **kwargs):
     config = CommonOptions(kwargs).load()
-    yape_commands.install(config)
+    yape_commands.install(config, reset=reset)
 
 
 def run_cli_main():

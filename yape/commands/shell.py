@@ -64,7 +64,6 @@ def shell(
 
     handover(
         config,
-        active_shell,
         *command,
         env=ENTRY_ENVS,
         use_source_dir=use_source_dir,

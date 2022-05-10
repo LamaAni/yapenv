@@ -1,5 +1,4 @@
 import json
-import os
 import shutil
 from typing import List
 import yaml
@@ -56,35 +55,42 @@ def init(
     if merge_with_current:
         to_merge.append(active_config)
 
-    config = YAPEConfig(deep_merge({}, *to_merge))
-    config.initialize(resolve_imports=False)
+    init_config = YAPEConfig(deep_merge({}, *to_merge))
+    init_config.initialize(resolve_imports=False)
 
     if python_version is not None:
-        config.python_version = python_version
+        init_config.python_version = python_version
 
     # Deleting invalid keys
     def del_key(key: str):
-        if key in config:
-            del config[key]
+        if key in init_config:
+            del init_config[key]
 
     del_key("source_path")
     del_key("source_directory")
-    if config.python_executable in config:
+    if init_config.python_executable in init_config:
         del_key("python_version")
 
     config_filename = config_filename or YAPE_CONFIG_FILES[0] or ".yape.yaml"
-    with open(os.path.join(active_config.source_directory, config_filename), "w") as config_file:
+    config_filepath = active_config.resolve_from_source_directory(config_filename)
+    yape_log.debug("Initialing with config: \n" + yaml.safe_dump(init_config.to_dictionary()))
+    with open(config_filepath, "w") as config_file:
         if config_filename.endswith(".json"):
-            config_file.write(json.dumps(config.to_dictionary(), indent=2))
+            config_file.write(json.dumps(init_config.to_dictionary(), indent=2))
         else:
-            config_file.write(yaml.safe_dump(config.to_dictionary()))
+            config_file.write(yaml.safe_dump(init_config.to_dictionary()))
+        yape_log.info("Initialized config file @ " + config_filepath)
 
     if add_requirement_files:
-        touch(os.path.join(active_config.source_directory, "requirements.txt"))
-        touch(os.path.join(active_config.source_directory, "requirements.dev.txt"))
+        touch(active_config.resolve_from_source_directory("requirements.txt"))
+        touch(active_config.resolve_from_source_directory("requirements.dev.txt"))
+        yape_log.info("Initialized requirement files")
 
 
-def install(config: YAPEConfig):
+def install(
+    config: YAPEConfig,
+    reset: bool = False,
+):
     if not config.has_virtual_environment():
         virtualenv_create(config)
 
@@ -96,7 +102,7 @@ def install(config: YAPEConfig):
     yape_log.info("Copying yape shell activation script")
     shutil.copyfile(
         resolve_template("activate_yape_shell"),
-        config.resolve_from_venv_directory("activate_yape_shell"),
+        config.resolve_from_venv_directory("bin", "activate_yape_shell"),
     )
 
     yape_log.info("Venv ready")
