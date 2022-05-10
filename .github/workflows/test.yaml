@@ -1,0 +1,44 @@
+# This workflows will upload a Python Package using Twine when a release is created
+# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+
+name: Upload Python Package
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 setuptools wheel twine
+
+      - name: Lint
+        run: |
+          flake8 --verbose
+
+      - name: Prepare version
+        env:
+          VERSION_PATH: "yapenv/.version"
+          GITHUB_BRANCH: ${{ github.ref }}
+        run: |
+          echo "Version number: ${GITHUB_REF##*/}"
+          echo "${GITHUB_REF##*/}" > "$VERSION_PATH" || exit $?
+          cat "$VERSION_PATH"
+
+      - name: Test build
+        env:
+          VERSION_PATH: "yapenv/.version"
+        run: |
+          python setup.py sdist bdist_wheel
