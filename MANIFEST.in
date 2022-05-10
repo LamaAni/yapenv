@@ -1,1 +1,2 @@
 include yape/templates/*
+include .version

@@ -232,6 +232,13 @@ def install(**kwargs):
     yape_commands.install(config)
 
 
+@yape.command()
+@CommonOptions.decorator()
+def install(**kwargs):
+    config = CommonOptions(kwargs).load()
+    yape_commands.install(config)
+
+
 def run_cli_main():
     import sys
 
