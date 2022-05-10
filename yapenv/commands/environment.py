@@ -114,6 +114,7 @@ def install(
     config: YAPENVConfig,
     reset: bool = False,
     force: bool = False,
+    packages: List[str] = None,
 ):
     """Install the yapenv config in the virtual environment.
     Will create the environment if it dose not exist.
@@ -131,7 +132,7 @@ def install(
         virtualenv_create(config)
 
     if len(config.requirements) > 0:
-        pip_install(config)
+        pip_install(config, packages)
         yapenv_log.info("Success")
     else:
         yapenv_log.warn("No requirements found in config. Skipping pip install")

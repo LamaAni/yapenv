@@ -53,14 +53,30 @@ class CommonOptions(dict):
         return config
 
     @classmethod
-    def decorator(cls):
+    def decorator(cls, path_as_option: bool = False, long_args_only=False):
         def apply(fn):
-            for opt in [
-                click.argument("path", default=os.curdir),
+            opts = []
+            if path_as_option:
+                opts.append(
+                    click.option(
+                        "--path",
+                        help="The path to the yape config folder",
+                        default=os.curdir,
+                    )
+                )
+            else:
+                opts.append(click.argument("path", default=os.curdir))
+            opts += [
                 click.option(
-                    "-e",
-                    "--env",
-                    "--environment",
+                    *(
+                        [
+                            "-e",
+                            "--env",
+                            "--environment",
+                        ]
+                        if not long_args_only
+                        else ["--environment"]
+                    ),
                     help="Name of the extra environment config to load",
                     default=None,
                 ),
@@ -72,7 +88,8 @@ class CommonOptions(dict):
                     type=int,
                 ),
                 click.option("--full-errors", help="Show full python errors", is_flag=True),
-            ]:
+            ]
+            for opt in opts:
                 fn = opt(fn)
             return fn
 
@@ -88,21 +105,26 @@ class FormatOptions(dict):
     def format(self) -> PrintFormat:
         return self.get("format", PrintFormat.cli)
 
-    def print(self, val: Union[list, dict]):
-        return get_print_formatted(self.format, val, not self.no_quote)
+    def print(self, val: Union[list, dict], quote: bool = None):
+        quote = not self.no_quote if quote is None else quote
+        return get_print_formatted(self.format, val, quote)
 
     @classmethod
-    def decorator(cls, default_format: PrintFormat = PrintFormat.cli):
+    def decorator(cls, default_format: PrintFormat = PrintFormat.cli, allow_quote: bool = True):
         def apply(*args):
-            for opt in [
+            opts = [
                 click.option(
                     "--format",
                     help=f"The document formate to print in ({', '.join(k.value for k in PrintFormat)})",
                     type=PrintFormat,
                     default=default_format,
                 ),
-                click.option("--no-quote", help="Do not quote cli arguments", is_flag=True, default=False),
-            ]:
+            ]
+
+            if allow_quote:
+                opts.append(click.option("--no-quote", help="Do not quote cli arguments", is_flag=True, default=False))
+
+            for opt in opts:
                 fn = opt(*args)
             return fn
 
@@ -124,19 +146,25 @@ def pip_command():
     pass
 
 
-@pip_command.command("args", help="Create a pip install command for the yapenv config")
-@FormatOptions.decorator(PrintFormat.cli)
-@CommonOptions.decorator()
-def pip_args(**kwargs):
+@pip_command.command(
+    "args",
+    help="Create a pip install command for the yapenv config. "
+    + "If no packages specified, uses the yapenv configuration",
+)
+@FormatOptions.decorator(PrintFormat.cli, allow_quote=False)
+@CommonOptions.decorator(path_as_option=True)
+@click.argument("packages", nargs=-1)
+def pip_args(packages: List[str], **kwargs):
     config = CommonOptions(kwargs).load()
-    print(FormatOptions(kwargs).print(yapenv_commands.pip_command_args(config)))
+    print(FormatOptions(kwargs).print(yapenv_commands.pip_command_args(config, requirements=packages), quote=False))
 
 
 @pip_command.command("install", help="Run pip install using the config (within this python version)")
-@CommonOptions.decorator()
-def pip_install(**kwargs):
+@CommonOptions.decorator(path_as_option=True)
+@click.argument("packages", nargs=-1)
+def pip_install(packages: List[str], **kwargs):
     config = CommonOptions(kwargs).load()
-    yapenv_commands.pip_install(config)
+    yapenv_commands.pip_install(config, packages=packages)
 
 
 @yapenv.group("virtualenv", help="Run virtualenv commands through yapenv")
@@ -145,15 +173,14 @@ def virtualenv_command():
 
 
 @virtualenv_command.command("args", help="Create a venv install command for the yapenv config")
-@FormatOptions.decorator(PrintFormat.cli)
-@CommonOptions.decorator()
+@FormatOptions.decorator(PrintFormat.cli, allow_quote=False)
+@CommonOptions.decorator(path_as_option=True)
 def virtualenv_args(**kwargs):
     config = CommonOptions(kwargs).load()
-    print(FormatOptions(kwargs).print(yapenv_commands.virtualenv_args(config)))
+    print(FormatOptions(kwargs).print(yapenv_commands.virtualenv_args(config), quote=False))
 
 
 @virtualenv_command.command("create", help="Create a venv install command for the yapenv config")
-@FormatOptions.decorator(PrintFormat.cli)
 @CommonOptions.decorator()
 def virtualenv_create(**kwargs):
     config = CommonOptions(kwargs).load()
@@ -198,10 +225,10 @@ def shell(keep_current_directory: bool = False, **kwargs):
     help="Run a command inside the venv shell",
     context_settings={"ignore_unknown_options": True, "allow_extra_args": True},
 )
-@click.option("-k", "--keep-current-directory", help="Don't move into the venv directory", is_flag=True, default=False)
-@click.option("-p", "--path", help="The path to the source dir of the environment", default=os.curdir)
+@click.option("--keep-current-directory", help="Don't move into the venv directory", is_flag=True, default=False)
 @click.argument("command")
 @click.argument("args", nargs=-1)
+@CommonOptions.decorator(path_as_option=True, long_args_only=True)
 def run(command: str, args: List[str] = [], keep_current_directory: bool = False, **kwargs):
     config = CommonOptions(kwargs).load()
     config.load_virtualenv()
@@ -209,11 +236,24 @@ def run(command: str, args: List[str] = [], keep_current_directory: bool = False
     yapenv_commands.handover(config, *cmnd, use_source_dir=not keep_current_directory)
 
 
-@yapenv.command("install", help="Initialize the pip packages and install the packages using pipenv")
+@yapenv.command("freeze", help="Run pip freeze in the virtual env")
+@CommonOptions.decorator()
+def freeze(**kwargs):
+    config = CommonOptions(kwargs).load()
+    yapenv_commands.handover(config, "pip", "freeze", use_source_dir=True)
+
+
+@yapenv.command(
+    "install",
+    help="Initialize the pip packages and install the packages using pipenv."
+    + " If no packages specified installs packages from yapenv config",
+)
 @click.option("-r", "--reset", help="Reset the virtual environment", is_flag=True, default=False)
 @click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
-@CommonOptions.decorator()
+@click.argument("packages", nargs=-1)
+@CommonOptions.decorator(path_as_option=True)
 def install(
+    packages: List[str],
     reset: bool = False,
     force: bool = False,
     **kwargs,
@@ -223,6 +263,7 @@ def install(
         config,
         reset=reset,
         force=force,
+        packages=packages,
     )
 
 
