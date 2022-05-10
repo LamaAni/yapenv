@@ -245,7 +245,7 @@ def freeze(**kwargs):
 @yapenv.command(
     "install",
     help="Initialize the pip packages and install the packages using pipenv."
-    + " If no packages specified installs packages from yape config",
+    + " If no packages specified installs packages from yapenv config",
 )
 @click.option("-r", "--reset", help="Reset the virtual environment", is_flag=True, default=False)
 @click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
