@@ -23,18 +23,24 @@ By default `yapenv` uses the following configuration file names.
 python_version: "3.9" # Python version to use
 python_executable: null # Path to python executable (overrides python_version)
 venv_directory: .venv # Path to created virtualenv directory
-environments: [] # Optional environments, see environment configs
 pip_config_path: null # Path to the pip.conf file
-# [Any environment configuration argument is also valid here]
+env_file: .env # Env file to load when running commands
+pip_install_args: [] # List of arguments for pip install command
+virtualenv_args: [] # list of arguments for virtualenv command
+requirements: [] # List of requirements (see requirement configuration)
+environments: [] # Optional environments, see environment configs
 ```
 ### Environment Configuration
 
+Enable by using `--env <environment_name>` argument
+
 ```yaml
 environments:
-  env_file: .env # Env file to load when running commands
-  pip_install_args: [] # List of arguments for pip install command
-  virtualenv_args: [] # list of arguments for virtualenv command
-  requirements: [] # List of requirements (see requirement configuration)
+  dev: # Environment name
+    env_file: .env # Env file to load when running commands
+    pip_install_args: [] # List of arguments for pip install command
+    virtualenv_args: [] # list of arguments for virtualenv command
+    requirements: [] # List of requirements (see requirement configuration)
 ```
 
 ### Requirement Configuration
