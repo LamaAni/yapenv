@@ -1,4 +1,5 @@
 directory: .venv
+pip_config_path: pip.conf
 environments:
   dev:
     requirements:
