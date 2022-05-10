@@ -17,6 +17,16 @@ def get_print_formatted(
     val: Union[list, dict],
     quote_cli: bool = True,
 ):
+    """Return the value printed in the provided format
+
+    Args:
+        format (PrintFormat): The format to print in
+        val (Union[list, dict]): The value to print
+        quote_cli (bool, optional): If true, quote cli arguments. Defaults to True.
+
+    Returns:
+        str: The printed value in the format.
+    """
     if isinstance(val, dict) and (format == PrintFormat.list or format == PrintFormat.cli):
         as_list = []
         for k, v in val.items():

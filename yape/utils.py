@@ -5,16 +5,19 @@ from typing import List, Union
 
 
 def option_or_empty(key, val):
+    """Return a key/value option if val is not None"""
     if val is None:
         return []
     return [key, val]
 
 
 def clean_args(*args: List[str]):
+    """Clean arguments for empty/null values"""
     return [str(a) for a in args if a is not None and len(a) > 0]
 
 
 def touch(fname):
+    """Touch a file (like in unix)"""
     if os.path.exists(fname):
         os.utime(fname, None)
     else:
@@ -22,6 +25,7 @@ def touch(fname):
 
 
 def resolve_template(*path: str):
+    """Resolve a tempate give path args"""
     return resolve_path(
         *path,
         root_directory=os.path.join(os.path.dirname(__file__), "templates"),
@@ -29,6 +33,7 @@ def resolve_template(*path: str):
 
 
 def resolve_path(*path_parts: str, root_directory: str = None):
+    """Resolve a path given a root directory"""
     path_parts = [p.strip() for p in path_parts if p is not None and len(p.strip()) > 0]
     assert len(path_parts) > 0, ValueError("You must provide at least one path part")
     root_directory = root_directory or os.curdir
@@ -38,6 +43,12 @@ def resolve_path(*path_parts: str, root_directory: str = None):
 
 
 def deep_merge(target: Union[dict, list], *sources):
+    """Merge dictionaries and lists into a single object.
+    Lists values are concatenated
+
+    Args:
+        target (Union[dict, list]): The target to merge into.
+    """
     if isinstance(target, list):
         assert all(isinstance(src, list) for src in sources), (
             "Merge target and source must be of the same type (list)",

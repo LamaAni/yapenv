@@ -6,6 +6,7 @@ YAPE_CONFIG_FILES = re.split(r"[\s,]+", os.environ.get("YAPE_CONFIG_FILES", ".ya
 
 
 def get_version():
+    """Return the yape version"""
     version_path = os.path.join(os.path.dirname(__file__), ".version")
     if os.path.isfile(version_path):
         with open(version_path, "r") as raw:
