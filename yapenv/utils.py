@@ -1,6 +1,8 @@
 import os
+import re
 import subprocess
 import sys
+import shlex
 from typing import List, Union
 
 
@@ -11,9 +13,19 @@ def option_or_empty(key, val):
     return [key, val]
 
 
-def clean_args(*args: List[str]):
+def clean_args(*args: str):
     """Clean arguments for empty/null values"""
-    return [str(a) for a in args if a is not None and len(a) > 0]
+    args = [str(a) for a in args if a is not None and len(a) > 0]
+    return args
+
+
+def quote_no_expand_args(*args: str):
+    quoted = []
+    for a in args:
+        if re.match(r"[\s]", a) is None:
+            a = shlex.quote(a)
+        quoted.append(a)
+    return quoted
 
 
 def touch(fname):
@@ -136,6 +148,8 @@ def run_shell_commands(
 
     run_env = os.environ.copy() if include_process_envs else {}
     run_env.update(envs or {})
+
+    print(" ".join(shell_command))
 
     rslt = subprocess.run(
         " ".join(shell_command),

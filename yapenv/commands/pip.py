@@ -1,5 +1,5 @@
 from yapenv.log import yapenv_log
-from yapenv.utils import run_python_module, clean_args
+from yapenv.utils import run_python_module, clean_args, quote_no_expand_args
 from yapenv.config import YAPENVConfig
 
 
@@ -9,10 +9,12 @@ def pip_command_args(config: YAPENVConfig):
     Args:
         config (YAPENVConfig): The yapenv config.
     """
-    return clean_args(
-        "install",
-        *config.pip_install_args,
-        *[r.package for r in config.requirements],
+    return quote_no_expand_args(
+        *clean_args(
+            "install",
+            *config.pip_install_args,
+            *[r.package for r in config.requirements],
+        )
     )
 
 

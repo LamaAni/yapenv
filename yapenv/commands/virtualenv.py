@@ -1,6 +1,6 @@
 import os
 from yapenv.log import yapenv_log
-from yapenv.utils import run_python_module, option_or_empty, clean_args
+from yapenv.utils import run_python_module, option_or_empty, clean_args, quote_no_expand_args
 from yapenv.config import YAPENVConfig
 
 
@@ -10,10 +10,12 @@ def virtualenv_args(config: YAPENVConfig):
     Args:
         config (YAPENVConfig): The yapenv config.
     """
-    return clean_args(
-        *option_or_empty("--python", config.python_executable or config.python_version),
-        *config.virtualenv_args,
-        config.venv_path,
+    return quote_no_expand_args(
+        *clean_args(
+            *option_or_empty("--python", config.python_executable or config.python_version),
+            *config.virtualenv_args,
+            config.venv_path,
+        )
     )
 
 

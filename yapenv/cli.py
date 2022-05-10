@@ -77,15 +77,15 @@ class CommonOptions(dict):
 
 class FormatOptions(dict):
     @property
-    def quote(self) -> bool:
-        return self.get("quote", False)
+    def no_quote(self) -> bool:
+        return self.get("no_quote", False)
 
     @property
     def format(self) -> PrintFormat:
         return self.get("format", PrintFormat.cli)
 
     def print(self, val: Union[list, dict]):
-        return get_print_formatted(self.format, val, self.quote)
+        return get_print_formatted(self.format, val, not self.no_quote)
 
     @classmethod
     def decorator(cls, default_format: PrintFormat = PrintFormat.cli):
@@ -97,7 +97,7 @@ class FormatOptions(dict):
                     type=PrintFormat,
                     default=default_format,
                 ),
-                click.option("--quote", help="Quote cli arguments if needed", is_flag=True, default=False),
+                click.option("--no-quote", help="Do not quote cli arguments", is_flag=True, default=False),
             ]:
                 fn = opt(*args)
             return fn
