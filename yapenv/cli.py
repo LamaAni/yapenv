@@ -240,7 +240,11 @@ def init(
     **kwargs,
 ):
     config = CommonOptions(kwargs).load(resolve_imports=False)
-    if not no_install and not yapenv_commands.check_delete_environment(config, force=force):
+    if (
+        not no_install
+        and config.has_virtual_environment()
+        and not yapenv_commands.check_delete_environment(config, force=force)
+    ):
         yapenv_log.info("Aborted")
         return
 
