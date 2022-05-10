@@ -53,7 +53,7 @@ class CommonOptions(dict):
         return config
 
     @classmethod
-    def decorator(cls, path_as_option: bool = False):
+    def decorator(cls, path_as_option: bool = False, long_args_only=False):
         def apply(fn):
             opts = []
             if path_as_option:
@@ -68,9 +68,15 @@ class CommonOptions(dict):
                 opts.append(click.argument("path", default=os.curdir))
             opts += [
                 click.option(
-                    "-e",
-                    "--env",
-                    "--environment",
+                    *(
+                        [
+                            "-e",
+                            "--env",
+                            "--environment",
+                        ]
+                        if not long_args_only
+                        else ["--environment"]
+                    ),
                     help="Name of the extra environment config to load",
                     default=None,
                 ),
@@ -218,10 +224,10 @@ def shell(keep_current_directory: bool = False, **kwargs):
     help="Run a command inside the venv shell",
     context_settings={"ignore_unknown_options": True, "allow_extra_args": True},
 )
-@click.option("-k", "--keep-current-directory", help="Don't move into the venv directory", is_flag=True, default=False)
+@click.option("--keep-current-directory", help="Don't move into the venv directory", is_flag=True, default=False)
 @click.argument("command")
 @click.argument("args", nargs=-1)
-@CommonOptions.decorator(path_as_option=True)
+@CommonOptions.decorator(path_as_option=True, long_args_only=True)
 def run(command: str, args: List[str] = [], keep_current_directory: bool = False, **kwargs):
     config = CommonOptions(kwargs).load()
     config.load_virtualenv()
