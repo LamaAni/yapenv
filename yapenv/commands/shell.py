@@ -1,12 +1,12 @@
 import os
-from yape.commands.virtualenv import virtualenv_create
-from yape.config import YAPEConfig
-from yape.consts import ENTRY_ENVS
-from yape.log import yape_log
+from yapenv.commands.virtualenv import virtualenv_create
+from yapenv.config import YAPENVConfig
+from yapenv.consts import ENTRY_ENVS
+from yapenv.log import yapenv_log
 
 
 def handover(
-    config: YAPEConfig,
+    config: YAPENVConfig,
     *command: str,
     use_source_dir: bool = True,
     env: dict = None,
@@ -14,7 +14,7 @@ def handover(
     """Replaces the current executing process with the executing command.
 
     Args:
-        config (YAPEConfig): The yape config
+        config (YAPENVConfig): The yapenv config
         use_source_dir (bool, optional): If true, then use the config venv dir to start the process. Defaults to True.
         shell_executable (str, optional): The shell executable to use. Defaults to None.
     """
@@ -25,27 +25,27 @@ def handover(
 
     command = list(command)
 
-    yape_log.debug(f"Running: {command}")
+    yapenv_log.debug(f"Running: {command}")
     os.execvpe(command[0], command, env=env or os.environ.copy())
 
 
 def shell(
-    config: YAPEConfig,
+    config: YAPENVConfig,
     use_source_dir: bool = False,
     active_shell: str = None,
 ):
-    """Start a yape shell, with the venv enabled.
+    """Start a yapenv shell, with the venv enabled.
 
     Args:
-        config (YAPEConfig): The yape config
+        config (YAPENVConfig): The yapenv config
         use_source_dir (bool, optional): If true, then use the config venv dir to start the process. Defaults to True.
         shell_executable (str, optional): The shell executable to use. Defaults to None.
     """
 
     if not config.has_virtual_environment():
-        yape_log.warning("Virtual env not found")
+        yapenv_log.warning("Virtual env not found")
         if input("Create? (y/n)") != "y":
-            yape_log.info("Aborted")
+            yapenv_log.info("Aborted")
             return
 
         virtualenv_create(config)
@@ -54,9 +54,9 @@ def shell(
     command = []
     if os.name != "nt":
         active_shell = active_shell or os.environ.get("SHELL", "sh")
-        yape_activate = config.resolve_from_venv_directory("bin", "activate_yape_shell")
+        yapenv_activate = config.resolve_from_venv_directory("bin", "activate_yapenv_shell")
         venv_activate = config.resolve_from_venv_directory("bin", "activate")
-        command = [active_shell, yape_activate, venv_activate, active_shell]
+        command = [active_shell, yapenv_activate, venv_activate, active_shell]
     else:
         config.load_virtualenv()
         active_shell = active_shell or "cmd.exe"

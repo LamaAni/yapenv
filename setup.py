@@ -5,7 +5,7 @@ import logging
 
 REPO_PATH = os.path.dirname(os.path.abspath(__file__))
 VERSION_PATH = os.path.abspath(os.environ.get("VERSION_PATH", os.path.join(REPO_PATH, ".version")))
-GITHUB_URL = "https://github.com/LamaAni/yape.git"
+GITHUB_URL = "https://github.com/LamaAni/yapenv.git"
 
 packages = find_packages()
 
@@ -44,8 +44,7 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "yape=yape.__main__:run_cli_main",
-            "yapenv=yape.__main__:run_cli_main",
+            "yapenv=yapenv.__main__:run_cli_main",
         ],
     },
     install_requires=requirement_list,

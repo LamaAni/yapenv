@@ -1,39 +1,124 @@
-# yape
-Yet another python environment manager (One with less opinions)
+# yapenv
 
 ## Alpha
 
-### Install
+WARNING: This repo is still in alpha development phase and structure is subject to change.
 
-The name "yape" was taken. Oh well. To install,
+Yet Another Python Environment manager (with less options).
+
+### Features
+
+1. Easy configuration via YAML files with optional inheritance.
+1. Named environments with per-environment configuration (test, dev, beta, prod, etc...).
+1. CLI interface with easy initialization.
+
+## Install
 
 ```shell
 pip install yapenv
 ```
 
-## Configuration options
+Run in your project directory
 
-### Core config
-```yaml
-python_version: '3.9' # The python version
-python_executable: null # Overrides python_version
-venv_directory: .venv # The venv path
-environments: [] # Possible environments, see environment configs
-pip_config_path: null # The path to the pip.conf to use.
-
-# [Any environment config argument is also valid]
 ```
-### Environment config
-
-```yaml
-env_file: .env # The env file to load when running commands.
-pip_install_args: [] # List of arguments for pip install
-virtualenv_args: [] # list of arguments for virtualenv.
-requirements: [] # List of requirements, see requirement config (or string)
+yapenv init
 ```
 
-### Requirement config
+## Configuration
+
+By default `yapenv` uses the following configuration file names.
+
+- `.yapenv.yaml`
+- `.yapenv.yml`
+- `.yapenv`
+- `.yapenv.json`
+
+### Core Configuration
+
 ```yaml
-pacakge: null or str # Name of package.
-import: null or str # Path to import (requirements.txt)
+python_version: "3.9" # Python version to use
+python_executable: null # Path to python executable (overrides python_version)
+venv_directory: .venv # Path to created virtualenv directory
+pip_config_path: null # Path to the pip.conf file
+inherit: false # Boolean, if true inherit parent directory's yapenv configuration
+environments: [] # Optional environments, see environment configs
+
+# These values are inherited from and overwritten by environment configuration
+env_file: .env # Env file to load when running commands
+pip_install_args: [] # List of arguments for pip install command
+virtualenv_args: [] # list of arguments for virtualenv command
+requirements: [] # List of requirements (see requirement configuration)
 ```
+### Environment Configuration
+
+Enabled by using `--env <environment_name>` argument.
+
+```yaml
+environments:
+  dev: # Environment name
+    env_file: .env # Env file to load when running commands
+    pip_install_args: [] # List of arguments for pip install command
+    virtualenv_args: [] # list of arguments for virtualenv command
+    requirements: [] # List of requirements (see requirement configuration)
+```
+
+### Requirement Configuration
+
+```yaml
+requirements:
+- package: mypackage # Pip package name string
+- myotherpackage==0.0.1 # Pip package name string
+- import: requirements.txt # Path to requirements.txt to import
+```
+
+### Environment Variables
+
+- `YAPENV_ENV_FILE`: Env file to load when running commands (default=`.env`).
+- `YAPENV_FULL_ERRORS`: Boolean that tells `yapenv` to dump full traceback (default=`"false"`).
+- `YAPENV_CONFIG_FILES`: Array of yapenv config file names (default=`".yapenv.yaml .yapenv.yml .yapenv .yapenv.json"`).
+- `NO_COLOR`: Boolean that disables colorized logging output (default="`false`")
+- `VIRTUAL_ENV`: File path of python virtualenv (default=`None`)
+
+### Example Configurations
+
+#### Requirements File Method
+```
+python_version: "3.9"
+venv_directory: .venv
+environments:
+  dev:
+    requirements:
+    - import: requirements.dev.txt
+requirements:
+- import: requirements.txt
+```
+
+#### Package List Method
+```
+python_version: "3.10"
+venv_directory: .venv
+environments:
+  dev:
+    requirements:
+    - package: flake8
+    - package: black
+requirements:
+- package: celery==5.2.6
+- Flask>=2.1.2
+```
+
+# Contribution
+
+Feel free to ping me in issues or directly on LinkedIn to contribute.
+
+# Future implementation
+
+We plan to support multiple python version per environment.
+
+Looking for help on this subject.
+
+# Licence
+
+Copyright ©
+`Zav Shotan`, `Patrick Huber`, and other [contributors](graphs/contributors).
+It is free software, released under the MIT licence, and may be redistributed under the terms specified in `LICENSE`.

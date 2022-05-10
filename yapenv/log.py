@@ -4,7 +4,7 @@ import logging
 NO_COLOR = os.environ.get("NO_COLOR") == "true"
 
 
-class YAPELogFormatter(logging.Formatter):
+class YAPENVLogFormatter(logging.Formatter):
     colors = {
         "red": "\033[0;31m",
         "green": "\033[0;32m",
@@ -35,16 +35,16 @@ class YAPELogFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-yape_log = logging.getLogger("yape_log")
-yape_log.setLevel(logging.getLevelName(os.environ.get("LOG_LEVEL", "INFO")))
+yapenv_log = logging.getLogger("yapenv_log")
+yapenv_log.setLevel(logging.getLevelName(os.environ.get("LOG_LEVEL", "INFO")))
 
 
 # create console handler
-yape_log_formatter = YAPELogFormatter()
-yape_log_handler = logging.StreamHandler()
-yape_log.addHandler(yape_log_handler)
-yape_log_handler.setFormatter(yape_log_formatter)
+yapenv_log_formatter = YAPENVLogFormatter()
+yapenv_log_handler = logging.StreamHandler()
+yapenv_log.addHandler(yapenv_log_handler)
+yapenv_log_handler.setFormatter(yapenv_log_formatter)
 
 
 if __name__ == "__main__":
-    yape_log.info("Tester")
+    yapenv_log.info("Tester")

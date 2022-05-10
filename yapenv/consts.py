@@ -2,11 +2,11 @@ import os
 import re
 
 ENTRY_ENVS = os.environ.copy()
-YAPE_CONFIG_FILES = re.split(r"[\s,]+", os.environ.get("YAPE_CONFIG_FILES", ".yape.yaml .yape .yape.yml .yape.json"))
+YAPENV_CONFIG_FILES = re.split(r"[\s,]+", os.environ.get("YAPENV_CONFIG_FILES", ".yapenv.yaml .yapenv.yml .yapenv .yapenv.json"))
 
 
 def get_version():
-    """Return the yape version"""
+    """Return the yapenv version"""
     version_path = os.path.join(os.path.dirname(__file__), ".version")
     if os.path.isfile(version_path):
         with open(version_path, "r") as raw:
@@ -14,5 +14,5 @@ def get_version():
     return "local"
 
 
-YAPE_VERSION = get_version()
-__version__ = YAPE_VERSION
+YAPENV_VERSION = get_version()
+__version__ = YAPENV_VERSION

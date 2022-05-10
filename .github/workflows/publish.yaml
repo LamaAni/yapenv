@@ -27,7 +27,7 @@ jobs:
 
       - name: Prepare version
         env:
-          VERSION_PATH: "yape/.version"
+          VERSION_PATH: "yapenv/.version"
           GITHUB_BRANCH: ${{ github.ref }}
         run: |
           echo "Version number: ${GITHUB_REF##*/}"
@@ -38,7 +38,7 @@ jobs:
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-          VERSION_PATH: "yape/.version"
+          VERSION_PATH: "yapenv/.version"
         run: |
           python setup.py sdist bdist_wheel
           twine upload dist/*
