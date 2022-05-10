@@ -242,6 +242,7 @@ def init(
     config = CommonOptions(kwargs).load(resolve_imports=False)
     if (
         not no_install
+        and reset
         and config.has_virtual_environment()
         and not yapenv_commands.check_delete_environment(config, force=force)
     ):
