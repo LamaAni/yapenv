@@ -15,6 +15,7 @@ REQUIREMENTS_COLLECTION_NAME = "requirements"
 class YAPEConfigRequirement(dict):
     @property
     def package(self) -> str:
+        """The name of the package to require"""
         return self.get("package", None)
 
     @package.setter
@@ -28,6 +29,7 @@ class YAPEConfigRequirement(dict):
 
     @classmethod
     def parse(cls, requirement: Union[str, dict, "YAPEConfigRequirement"]):
+        """Parse the string/dict and return the package requirement"""
         if isinstance(requirement, cls):
             return requirement
         if isinstance(requirement, dict):
@@ -165,22 +167,27 @@ class YAPEConfig(YAPEEnvironmentConfig):
 
     @property
     def venv_path(self) -> str:
+        """The path to the virtual environment"""
         if os.path.isabs(self.venv_directory):
             return self.venv_directory
         return os.path.abspath(os.path.join(self.source_directory, self.venv_directory))
 
     def resolve_from_venv_directory(self, *parts: List[str]):
+        """Resolve path with the virtual env directory as root path"""
         return resolve_path(*parts, root_directory=self.venv_path)
 
     def resolve_from_source_directory(self, *parts: List[str]):
+        """Resolve path with the source directory as root path"""
         return resolve_path(*parts, root_directory=self.source_directory)
 
     @property
     def environments(self) -> Dict[str, YAPEEnvironmentConfig]:
+        """A dictionary of the configuration environments available"""
         return self.get("environments", {})
 
     @property
     def inherit(self) -> bool:
+        """If true, this config can inherit its parents"""
         return self.get("inherit", False)
 
     def stop_inheritance(self) -> bool:
@@ -192,7 +199,7 @@ class YAPEConfig(YAPEEnvironmentConfig):
         return False
 
     def load_virtualenv(self):
-        """Loads the virtual environment into memory (using activate.py)."""
+        """Loads the virtual environment into python (using activate.py)."""
         import importlib.util
 
         import_path = self.resolve_from_venv_directory("bin", "activate_this.py")
@@ -207,6 +214,7 @@ class YAPEConfig(YAPEEnvironmentConfig):
         resolve_imports: bool = True,
         clean_duplicate_requirements: bool = True,
     ):
+        """Initialize and clean the configuration"""
         super().initialize(
             resolve_imports=resolve_imports,
         )
@@ -219,15 +227,18 @@ class YAPEConfig(YAPEEnvironmentConfig):
         self.python_version = self.python_version or f"{sys.version_info.major}.{sys.version_info.minor}"
 
     def clean_duplicate_requirements(self):
+        """Clean all duplicate requirement entries"""
         configs = [self] + list(self.environments.values())
         for c in configs:
             if REQUIREMENTS_COLLECTION_NAME in c:
                 c[REQUIREMENTS_COLLECTION_NAME] = YAPEConfigRequirement.unique(c[REQUIREMENTS_COLLECTION_NAME])
 
     def to_dictionary(self) -> dict:
+        """Convert this config to a dictionary"""
         return json.loads(json.dumps(self))
 
     def has_virtual_environment(self) -> dict:
+        """True if a virtual environment exists"""
         return os.path.isdir(self.venv_path)
 
     @classmethod
