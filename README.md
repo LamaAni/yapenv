@@ -7,7 +7,7 @@ WARNING: This repo is still in alpha development phase and structure is subject 
 Yet Another Python Environment manager (with less options).
 
 - Easy configuration via YAML files with optional inheritance.
-- Named environments with per environment configuration (test, dev, beta, prod, etc...).
+- Named environments with per-environment configuration (test, dev, beta, prod, etc...).
 - CLI interface with easy initialization.
 
 ## Install
