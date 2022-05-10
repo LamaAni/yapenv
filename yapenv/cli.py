@@ -260,7 +260,7 @@ def init(
         config = CommonOptions(kwargs).load(resolve_imports=True)
         yapenv_commands.install(
             config,
-            reset=True,
+            reset=reset,
             force=True,  # already checked
         )
 
