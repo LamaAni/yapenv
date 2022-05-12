@@ -3,7 +3,7 @@ import yaml
 import json
 import os
 import sys
-from typing import Union, List, Dict
+from typing import Any, Union, List, Dict
 from yapenv.consts import YAPENV_CONFIG_FILES
 from yapenv.utils import deep_merge, resolve_path, get_collection_path, clean_data_types
 from yapenv.log import yapenv_log
@@ -98,8 +98,8 @@ class YAPENVEnvironmentConfig(dict):
         """Convert this config to a dictionary"""
         return clean_data_types(self)
 
-    def search(self, *paths:str):
-        """Search the config for specific dictionary paths. 
+    def search(self, *paths: str) -> List[Any]:
+        """Search the config for specific dictionary paths.
         Paths is a list of string representations of dictionary paths.
         Ex: paths = ['a.b[0].c']
         """
