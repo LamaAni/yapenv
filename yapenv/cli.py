@@ -30,9 +30,7 @@ class CommonOptions(dict):
         return self.get("env_file", os.environ.get("YAPENV_ENV_FILE", ".env"))
 
     def load(
-        self,
-        resolve_imports: bool = True,
-        ignore_environment: bool = False,
+        self, resolve_imports: bool = True, ignore_environment: bool = False, inherit_depth: int = None
     ) -> YAPENVConfig:
         env_file = resolve_path(self.env_file)
         if os.path.isfile(env_file):
@@ -42,7 +40,7 @@ class CommonOptions(dict):
         config = YAPENVConfig.load(
             self.path,
             environment=None if ignore_environment else self.environment,
-            inherit_depth=self.inherit_depth,
+            inherit_depth=inherit_depth if inherit_depth is not None else self.inherit_depth,
             resolve_imports=resolve_imports,
         )
 
@@ -292,6 +290,7 @@ def install(
 @click.option("--no-install", help="Do not install after initializing", is_flag=True, default=False)
 @click.option("--no-requirement-files", help="Do not initialize with requirement files", is_flag=True, default=False)
 @click.option("--reset", help="Delete current configuration and reset it.", is_flag=True, default=False)
+@click.option("--init-depth", help="Number of parent folders to inherit the init config from. -1 = Inf", default=0)
 @CommonOptions.decorator()
 def init(
     reset=False,
@@ -300,10 +299,16 @@ def init(
     no_requirement_files: bool = False,
     no_install: bool = False,
     force: bool = False,
+    init_depth: int = 0,
     **kwargs,
 ):
     options = CommonOptions(kwargs)
-    config = options.load(resolve_imports=False, ignore_environment=True)
+    config = options.load(
+        resolve_imports=False,
+        ignore_environment=True,
+        inherit_depth=init_depth,
+    )
+
     if (
         not no_install
         and reset
