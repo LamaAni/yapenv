@@ -30,7 +30,10 @@ class CommonOptions(dict):
         return self.get("env_file", os.environ.get("YAPENV_ENV_FILE", ".env"))
 
     def load(
-        self, resolve_imports: bool = True, ignore_environment: bool = False, inherit_depth: int = None
+        self,
+        resolve_imports: bool = True,
+        ignore_environment: bool = False,
+        inherit_depth: int = None,
     ) -> YAPENVConfig:
         env_file = resolve_path(self.env_file)
         if os.path.isfile(env_file):
