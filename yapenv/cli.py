@@ -232,7 +232,7 @@ def config(paths: List[str], resolve: bool = False, **kwargs):
         raise ValueError("Not found")
 
     if not isinstance(to_display, list) and not isinstance(to_display, dict):
-        print(str(to_display))  # Print as some non json value.
+        print(str(to_display))  # Not a list or dict, don't format output.
     else:
         print(FormatOptions(kwargs).print(to_display))
 
