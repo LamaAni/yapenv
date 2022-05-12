@@ -7,7 +7,7 @@ from yapenv.log import yapenv_log
 from yapenv.consts import YAPENV_VERSION
 from yapenv.format import PrintFormat, get_print_formatted
 from yapenv.config import YAPENVConfig
-from yapenv.utils import resolve_path
+from yapenv.utils import clean_data_types, resolve_path
 
 
 class CommonOptions(dict):
@@ -33,6 +33,7 @@ class CommonOptions(dict):
         self,
         resolve_imports: bool = True,
         ignore_environment: bool = False,
+        inherit_depth: int = None,
     ) -> YAPENVConfig:
         env_file = resolve_path(self.env_file)
         if os.path.isfile(env_file):
@@ -42,7 +43,7 @@ class CommonOptions(dict):
         config = YAPENVConfig.load(
             self.path,
             environment=None if ignore_environment else self.environment,
-            inherit_depth=self.inherit_depth,
+            inherit_depth=inherit_depth if inherit_depth is not None else self.inherit_depth,
             resolve_imports=resolve_imports,
         )
 
@@ -204,13 +205,41 @@ def export(**kwargs):
     print(FormatOptions(kwargs).print(packages))
 
 
-@yapenv.command(help="Print the YAPENV computed configuration")
+@yapenv.command(
+    help="""Print the YAPENV computed configuration.
+DICT_PATHS (array) is a value to search, e.g. 'a.b[0].c'. If no paths provided
+will print the entire config.
+"""
+)
 @click.option("--resolve", help="Resolve requirement files", is_flag=True, default=None)
 @FormatOptions.decorator(PrintFormat.yaml)
-@CommonOptions.decorator()
-def config(resolve: bool = False, **kwargs):
+@CommonOptions.decorator(path_as_option=True)
+@click.argument("dict_paths", nargs=-1)
+def config(dict_paths: List[str], resolve: bool = False, **kwargs):
     config = CommonOptions(kwargs).load(resolve_imports=resolve)
-    print(FormatOptions(kwargs).print(config.to_dictionary()))
+    to_display = None
+    if len(dict_paths) == 0:
+        # If no paths specified, display the entire config.
+        to_display = config.to_dictionary()
+    else:
+        # Search for paths in the config
+        to_display = config.search(*dict_paths)
+        # Clean the values from custom python types
+        to_display = [clean_data_types(v) for v in to_display if v is not None]
+        if len(to_display) == 0:
+            to_display = None
+        elif len(dict_paths) == 1:
+            # If a single value requested, just display that value.
+            to_display = to_display[0]
+
+    if to_display is None:
+        # Nothing was found. Throw error.
+        raise ValueError("Not found")
+
+    if not isinstance(to_display, list) and not isinstance(to_display, dict):
+        print(str(to_display))  # Not a list or dict, don't format output.
+    else:
+        print(FormatOptions(kwargs).print(to_display))
 
 
 @yapenv.command(help="Start a venv shell")
@@ -274,6 +303,7 @@ def install(
 @click.option("--no-install", help="Do not install after initializing", is_flag=True, default=False)
 @click.option("--no-requirement-files", help="Do not initialize with requirement files", is_flag=True, default=False)
 @click.option("--reset", help="Delete current configuration and reset it.", is_flag=True, default=False)
+@click.option("--init-depth", help="Number of parent folders to inherit the init config from. -1 = Inf", default=0)
 @CommonOptions.decorator()
 def init(
     reset=False,
@@ -282,10 +312,16 @@ def init(
     no_requirement_files: bool = False,
     no_install: bool = False,
     force: bool = False,
+    init_depth: int = 0,
     **kwargs,
 ):
     options = CommonOptions(kwargs)
-    config = options.load(resolve_imports=False, ignore_environment=True)
+    config = options.load(
+        resolve_imports=False,
+        ignore_environment=True,
+        inherit_depth=init_depth,
+    )
+
     if (
         not no_install
         and reset

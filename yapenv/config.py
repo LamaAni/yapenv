@@ -3,9 +3,9 @@ import yaml
 import json
 import os
 import sys
-from typing import Union, List, Dict
+from typing import Any, Union, List, Dict
 from yapenv.consts import YAPENV_CONFIG_FILES
-from yapenv.utils import deep_merge, resolve_path
+from yapenv.utils import deep_merge, resolve_path, get_collection_path, clean_data_types
 from yapenv.log import yapenv_log
 
 
@@ -93,6 +93,17 @@ class YAPENVEnvironmentConfig(dict):
     @property
     def virtualenv_args(self) -> List[str]:
         return self.get("virtualenv_args", [])
+
+    def to_dictionary(self) -> dict:
+        """Convert this config to a dictionary"""
+        return clean_data_types(self)
+
+    def search(self, *paths: str) -> List[Any]:
+        """Search the config for specific dictionary paths.
+        Paths is a list of string representations of dictionary paths.
+        Ex: paths = ['a.b[0].c']
+        """
+        return [get_collection_path(self, p) for p in paths]
 
     def initialize_requirements(self):
         """Resolves the internal requirement imports and cleans up the requirements list"""
@@ -232,10 +243,6 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
         for c in configs:
             if REQUIREMENTS_COLLECTION_NAME in c:
                 c[REQUIREMENTS_COLLECTION_NAME] = YAPENVConfigRequirement.unique(c[REQUIREMENTS_COLLECTION_NAME])
-
-    def to_dictionary(self) -> dict:
-        """Convert this config to a dictionary"""
-        return json.loads(json.dumps(self))
 
     def has_virtual_environment(self) -> dict:
         """True if a virtual environment exists"""
