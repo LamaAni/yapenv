@@ -265,7 +265,10 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
             else:
                 config = yaml.safe_load(config_file.read())
 
-        return YAPENVConfig(config)
+        config = YAPENVConfig(config)
+        config.source_path = filepath
+
+        return config
 
     @classmethod
     def _load_from_siblings(
@@ -285,6 +288,10 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
 
         if len(siblings) == 1:
             return siblings[0]
+
+        # reverse the load order so first takes precedent.
+        siblings.reverse()
+
         return YAPENVConfig(deep_merge({}, *siblings))
 
     @classmethod
