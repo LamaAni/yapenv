@@ -1,4 +1,6 @@
+import json
 import os
+import sys
 from typing import List, Union
 import click
 from dotenv import load_dotenv
@@ -7,7 +9,7 @@ from yapenv.log import yapenv_log
 from yapenv.consts import YAPENV_VERSION
 from yapenv.format import PrintFormat, get_print_formatted
 from yapenv.config import YAPENVConfig
-from yapenv.utils import clean_data_types, resolve_path
+from yapenv.utils import clean_data_types, deep_merge, resolve_path
 
 
 class CommonOptions(dict):
@@ -297,13 +299,24 @@ def install(
 
 
 @yapenv.command("init", help="Initializes the yapenv configuration in a folder")
-@click.option("-p", "--python-version", help="Use this python version", default=None)
+@click.option(
+    "-p",
+    "--python-version",
+    help="Use this python version. If empty ('') no python version will be set.",
+    default=f"{sys.version_info.major}.{sys.version_info.minor}",
+)
 @click.option("-c", "--config-filename", help="Override the configuration filename", default=None)
 @click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
 @click.option("--no-install", help="Do not install after initializing", is_flag=True, default=False)
 @click.option("--no-requirement-files", help="Do not initialize with requirement files", is_flag=True, default=False)
 @click.option("--reset", help="Delete current configuration and reset it.", is_flag=True, default=False)
 @click.option("--init-depth", help="Number of parent folders to inherit the init config from. -1 = Inf", default=0)
+@click.option(
+    "-s",
+    "--set-config-args",
+    help='Set config values from dictionary (Json dict format), e.g. {"inherit": true}.',
+    multiple=True,
+)
 @CommonOptions.decorator()
 def init(
     reset=False,
@@ -313,8 +326,24 @@ def init(
     no_install: bool = False,
     force: bool = False,
     init_depth: int = 0,
+    set_config_args: List[str] = [],
     **kwargs,
 ):
+
+    python_version = python_version if python_version is not None and len(python_version) > 0 else None
+
+    # parse config args
+    merge_dicts = []
+    for arg in set_config_args:
+        try:
+            merge_dict = json.loads(arg)
+            assert isinstance(merge_dict, dict), "Not a dictionary"
+            merge_dicts.append(merge_dict)
+            yapenv_log.info("Merging with args from " + arg)
+
+        except Exception as ex:
+            raise Exception("All merge arguments must be passed as json dictionaries. Could not parse " + arg) from ex
+
     options = CommonOptions(kwargs)
     config = options.load(
         resolve_imports=False,
@@ -337,6 +366,7 @@ def init(
         python_version=python_version,
         config_filename=config_filename,
         add_requirement_files=not no_requirement_files,
+        merge_with=deep_merge({}, *merge_dicts),
     )
 
     if not no_install:
