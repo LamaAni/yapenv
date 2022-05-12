@@ -100,8 +100,8 @@ class YAPENVEnvironmentConfig(dict):
 
     def search(self, *paths:str):
         """Search the config for specific dictionary paths. 
-        Paths is a list string representations of dictionary paths.
-        Ex: 'a.b[0].c'
+        Paths is a list of string representations of dictionary paths.
+        Ex: paths = ['a.b[0].c']
         """
         return [get_collection_path(self, p) for p in paths]
 
