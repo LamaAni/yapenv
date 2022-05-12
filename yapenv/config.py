@@ -172,7 +172,7 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
 
     @property
     def python_version(self) -> str:
-        return self.get("python_version", None)
+        return self.get("python_version", f"{sys.version_info.major}.{sys.version_info.minor}")
 
     @python_version.setter
     def python_version(self, val: str):
@@ -235,7 +235,6 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
 
         if source_directory:
             self.source_directory = os.path.abspath(self.source_directory or source_directory)
-        self.python_version = self.python_version or f"{sys.version_info.major}.{sys.version_info.minor}"
 
     def clean_duplicate_requirements(self):
         """Clean all duplicate requirement entries"""
