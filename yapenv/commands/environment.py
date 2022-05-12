@@ -1,6 +1,5 @@
 import json
 import shutil
-import sys
 from typing import List
 import yaml
 from yapenv.log import yapenv_log
@@ -82,9 +81,7 @@ def init(
     init_config = YAPENVConfig(deep_merge({}, *to_merge))
     init_config.initialize(resolve_imports=False)
 
-    init_config.python_version = (
-        python_version or init_config.get("python_version") or f"{sys.version_info.major}.{sys.version_info.minor}"
-    )
+    init_config.python_version = python_version or init_config.get("python_version")
 
     # Deleting invalid keys
     def del_key(key: str):

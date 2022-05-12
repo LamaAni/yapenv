@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import List, Union
 import click
 from dotenv import load_dotenv
@@ -297,7 +298,12 @@ def install(
 
 
 @yapenv.command("init", help="Initializes the yapenv configuration in a folder")
-@click.option("-p", "--python-version", help="Use this python version", default=None)
+@click.option(
+    "-p",
+    "--python-version",
+    help="Use this python version. If empty ('') no python version will be set.",
+    default=f"{sys.version_info.major}.{sys.version_info.minor}",
+)
 @click.option("-c", "--config-filename", help="Override the configuration filename", default=None)
 @click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
 @click.option("--no-install", help="Do not install after initializing", is_flag=True, default=False)
@@ -315,6 +321,9 @@ def init(
     init_depth: int = 0,
     **kwargs,
 ):
+
+    python_version = python_version if python_version is not None and len(python_version) > 0 else None
+
     options = CommonOptions(kwargs)
     config = options.load(
         resolve_imports=False,
