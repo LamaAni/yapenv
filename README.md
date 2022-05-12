@@ -107,6 +107,39 @@ requirements:
 - Flask>=2.1.2
 ```
 
+## Extra config and reading configuration values
+
+yapenv allows extra configuration values to be embedded in its config file. e.g.
+
+```yaml
+python_version: "3.10"
+venv_directory: .venv
+requirements:
+ - black
+ - flake8
+
+my_custom_config:
+  a_list: 
+    - a_key: "my_custom_value"
+```
+
+Note: extra configuration values follow yapenv config inheritance rules.
+
+You can read your configuration value by,
+```shell
+yapenv config "my_custom_config.a_list[0].a_key"
+```
+That should output `my_custom_value`
+
+Or a yaml block (see format options in the command),
+```shell
+yapenv config "my_custom_config.a_list"
+```
+Should output,
+```yaml
+- a_key: "my_custom_value"
+```
+
 # Contribution
 
 Feel free to ping me in issues or directly on LinkedIn to contribute.
