@@ -43,6 +43,7 @@ def init(
     python_version: str = None,
     merge_with_current: bool = False,
     add_requirement_files: bool = True,
+    merge_with: dict = None,
 ):
     """Initialize the virtual environment and the yapenv configuration in the source directory.
 
@@ -52,6 +53,7 @@ def init(
         python_version (str, optional): The python version to use. Defaults to None.
         merge_with_current (bool, optional): If true, then merge with the existing config. Defaults to False.
         add_requirement_files (bool, optional): If true, add requirement file imports. Defaults to True.
+        merge_with (dict, optional): Merge configuration with dictionary before saving. Allow add items.
     """
     # Checking configuration
     to_merge: List[YAPENVConfig] = []
@@ -77,6 +79,9 @@ def init(
 
     if merge_with_current:
         to_merge.append(active_config)
+
+    if merge_with is not None:
+        to_merge.append(merge_with)
 
     init_config = YAPENVConfig(deep_merge({}, *to_merge))
     init_config.initialize(resolve_imports=False)
