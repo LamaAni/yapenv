@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import subprocess
@@ -160,3 +161,61 @@ def run_shell_commands(
         raise subprocess.SubprocessError(rslt.stderr)
 
     return rslt
+
+
+def clean_data_types(val):
+    return json.loads(json.dumps(val))
+
+
+COLLECTION_ITEM_PART_REGEX = r"^(.*?)(\[([0-9]*)\]|)$"
+
+
+def get_collection_path(val: Union[dict, list], path: Union[str, List[str]]):
+    """Returns a path within a data collection (list, dict)
+
+    Args:
+        val (Union[dict, list]): The value to search
+        path (Union[str, List[str]]): The path, parts seperated by '.', eg,
+            [22].a.b[33].
+            empty parts are ignored '..'
+            If a list then . is ignored.
+
+    Returns:
+        any: The value found.
+    """
+    # Path defined as a.b[2].c
+    if isinstance(path, str):
+        path = path.split(".")
+
+    if len(path) == 0:
+        return None
+
+    cur_item = path[0]
+    item_parts = re.match(r"^(\w*)(\[[0-9]*\]|)$", cur_item)
+    assert item_parts is not None, f"item parts must match the regex '{COLLECTION_ITEM_PART_REGEX}'"
+
+    item_name = item_parts[1] if len(item_parts[1]) > 0 else None
+    list_number = int(item_parts[2][1]) if len(item_parts[2]) > 0 else None
+
+    if item_name is None and list_number is None:
+        return get_collection_path(val, path[1:])
+
+    assert item_name is not None or list_number is not None, "Invalid item path part " + cur_item
+
+    was_found = False
+    if item_name is not None:
+        assert isinstance(val, dict), f"{cur_item} references a dict value but parent is not a dict"
+        val = val[item_name]
+        was_found = True
+    if list_number is not None:
+        assert isinstance(val, list), f"{cur_item} references a list value but parent is not a list"
+        val = val[list_number]
+        was_found = True
+
+    path = path[1:]
+    if len(path) > 0:
+        return get_collection_path(val, path)
+
+    if was_found:
+        return val
+    return None

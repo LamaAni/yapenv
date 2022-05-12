@@ -7,7 +7,7 @@ from yapenv.log import yapenv_log
 from yapenv.consts import YAPENV_VERSION
 from yapenv.format import PrintFormat, get_print_formatted
 from yapenv.config import YAPENVConfig
-from yapenv.utils import resolve_path
+from yapenv.utils import clean_data_types, resolve_path
 
 
 class CommonOptions(dict):
@@ -207,10 +207,28 @@ def export(**kwargs):
 @yapenv.command(help="Print the YAPENV computed configuration")
 @click.option("--resolve", help="Resolve requirement files", is_flag=True, default=None)
 @FormatOptions.decorator(PrintFormat.yaml)
-@CommonOptions.decorator()
-def config(resolve: bool = False, **kwargs):
+@CommonOptions.decorator(path_as_option=True)
+@click.argument("paths", nargs=-1)
+def config(paths: List[str], resolve: bool = False, **kwargs):
     config = CommonOptions(kwargs).load(resolve_imports=resolve)
-    print(FormatOptions(kwargs).print(config.to_dictionary()))
+    to_display = None
+    if len(paths) == 0:
+        to_display = config.to_dictionary()
+    else:
+        to_display = config.search(*paths)
+        to_display = [clean_data_types(v) for v in to_display if v is not None]
+        if len(to_display) == 0:
+            to_display = None
+        elif len(to_display) == 1:
+            to_display = to_display[0]
+
+    if to_display is None:
+        raise ValueError("Not found")
+
+    if not isinstance(to_display, list) and not isinstance(to_display, dict):
+        print(str(to_display))  # Print as some non json value.
+    else:
+        print(FormatOptions(kwargs).print(to_display))
 
 
 @yapenv.command(help="Start a venv shell")
