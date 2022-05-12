@@ -209,21 +209,21 @@ def export(**kwargs):
 @click.option("--resolve", help="Resolve requirement files", is_flag=True, default=None)
 @FormatOptions.decorator(PrintFormat.yaml)
 @CommonOptions.decorator(path_as_option=True)
-@click.argument("paths", nargs=-1)
-def config(paths: List[str], resolve: bool = False, **kwargs):
+@click.argument("dict_paths", nargs=-1)
+def config(dict_paths: List[str], resolve: bool = False, **kwargs):
     config = CommonOptions(kwargs).load(resolve_imports=resolve)
     to_display = None
-    if len(paths) == 0:
+    if len(dict_paths) == 0:
         # If no paths specified, display the entire config.
         to_display = config.to_dictionary()
     else:
         # Search for paths in the config
-        to_display = config.search(*paths)
+        to_display = config.search(*dict_paths)
         # Clean the values from custom python types
         to_display = [clean_data_types(v) for v in to_display if v is not None]
         if len(to_display) == 0:
             to_display = None
-        elif len(paths) == 1:
+        elif len(dict_paths) == 1:
             # If a single value requested, just display that value.
             to_display = to_display[0]
 
