@@ -224,7 +224,7 @@ def config(paths: List[str], resolve: bool = False, **kwargs):
         if len(to_display) == 0:
             to_display = None
         elif len(paths) == 1:
-            # Is a single value requested, just display that value.
+            # If a single value requested, just display that value.
             to_display = to_display[0]
 
     if to_display is None:
