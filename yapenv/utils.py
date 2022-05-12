@@ -191,7 +191,7 @@ def get_collection_path(val: Union[dict, list], path: Union[str, List[str]]):
         return None
 
     cur_item = path[0]
-    item_parts = re.match(r"^(\w*)(\[[0-9]*\]|)$", cur_item)
+    item_parts = re.match(COLLECTION_ITEM_PART_REGEX, cur_item)
     assert item_parts is not None, f"item parts must match the regex '{COLLECTION_ITEM_PART_REGEX}'"
 
     item_name = item_parts[1] if len(item_parts[1]) > 0 else None
