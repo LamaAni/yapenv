@@ -7,6 +7,3 @@ python_version: '3.9'
 requirements:
 - import: requirements.txt
 venv_directory: .venv
-
-dummy:
-  - a: b
