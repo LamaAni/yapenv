@@ -207,7 +207,8 @@ def export(**kwargs):
 
 @yapenv.command(
     help="""Print the YAPENV computed configuration.
-DICT_PATHS (array) is a value to search, e.g. a.b[0].c
+DICT_PATHS (array) is a value to search, e.g. 'a.b[0].c'. If no paths provided
+will print the entire config.
 """
 )
 @click.option("--resolve", help="Resolve requirement files", is_flag=True, default=None)
