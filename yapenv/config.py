@@ -99,7 +99,7 @@ class YAPENVEnvironmentConfig(dict):
         return clean_data_types(self)
 
     def search(self, *paths:str):
-        "Search the config for specific paths"
+        "Search the config for specific paths. i.e. a.b[0].c"
         return [get_collection_path(self, p) for p in paths]
 
     def initialize_requirements(self):
