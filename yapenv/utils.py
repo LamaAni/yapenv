@@ -181,7 +181,8 @@ def get_collection_path(val: Union[dict, list], path: Union[str, List[str]]):
             If a list then . is ignored.
 
     Returns:
-        any: The value found.
+        (any: The value found, bool: true if the value was found)
+
     """
     # Path defined as a.b[2].c
     if isinstance(path, str):
@@ -205,10 +206,14 @@ def get_collection_path(val: Union[dict, list], path: Union[str, List[str]]):
     was_found = False
     if item_name is not None:
         assert isinstance(val, dict), f"{cur_item} references a dict value but parent is not a dict"
-        val = val[item_name]
+        if item_name not in val:
+            return None, False
+        val = val.get(item_name)
         was_found = True
     if list_number is not None:
         assert isinstance(val, list), f"{cur_item} references a list value but parent is not a list"
+        if len(val) <= list_number:
+            return None, False
         val = val[list_number]
         was_found = True
 
@@ -217,5 +222,5 @@ def get_collection_path(val: Union[dict, list], path: Union[str, List[str]]):
         return get_collection_path(val, path)
 
     if was_found:
-        return val
-    return None
+        return val, True
+    return None, False

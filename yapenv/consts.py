@@ -2,11 +2,10 @@ import os
 import re
 
 ENTRY_ENVS = os.environ.copy()
+YAPENV_DEFAULT_CONFIG_FORMAT = os.environ.get("YAPENV_DEFAULT_CONFIG_FORMAT", "yaml")
 YAPENV_CONFIG_FILES = re.split(
     r"[\s,]+",
-    os.environ.get(
-        "YAPENV_CONFIG_FILES", ".yapenv.yaml .yapenv.yml .yapenv .yapenv.json"
-    ),
+    os.environ.get("YAPENV_CONFIG_FILES", ".yapenv.yaml .yapenv.yml .yapenv .yapenv.json"),
 )
 
 
