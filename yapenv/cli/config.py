@@ -92,7 +92,7 @@ def view(
     "get",
     help="""Print the YAPENV computed configuration.
 DICT_PATHS (array) is a value to search, e.g. 'a.b[0].c'. If no paths provided
-will print the entire config.
+will print the entire config (same as view).
 """,
 )
 @click.option("--resolve", help="Resolve requirement files", is_flag=True, default=None)
