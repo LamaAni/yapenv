@@ -205,7 +205,11 @@ def export(**kwargs):
     print(FormatOptions(kwargs).print(packages))
 
 
-@yapenv.command(help="Print the YAPENV computed configuration")
+@yapenv.command(
+    help="""Print the YAPENV computed configuration.
+DICT_PATHS (array) is a value to search, e.g. a.b[0].c
+"""
+)
 @click.option("--resolve", help="Resolve requirement files", is_flag=True, default=None)
 @FormatOptions.decorator(PrintFormat.yaml)
 @CommonOptions.decorator(path_as_option=True)
