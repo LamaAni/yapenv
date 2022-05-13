@@ -1,7 +1,7 @@
 import os
 import logging
 
-NO_COLOR = os.environ.get("NO_COLOR") == "true"
+NO_COLOR = os.environ.get("NO_COLOR","false").lower() == "true"
 
 
 class YAPENVLogFormatter(logging.Formatter):
@@ -16,8 +16,8 @@ class YAPENVLogFormatter(logging.Formatter):
         "end": "\033[0m",
     }
 
-    gray_format = "[%(asctime)s][%(levelname)8s] %(message)s"
-    color_format = "{gray}[%(asctime)s]{end}{lvl_color}[%(levelname)8s]{end} %(message)s"
+    gray_format = "[%(asctime)s][yapenv][%(levelname)8s] %(message)s"
+    color_format = "{gray}[%(asctime)s][yapenv]{end}{lvl_color}[%(levelname)8s]{end} %(message)s"
 
     FORMATS = {
         logging.DEBUG: "gray",

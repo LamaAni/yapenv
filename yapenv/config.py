@@ -4,7 +4,7 @@ import json
 import os
 import sys
 from typing import Any, Union, List, Dict
-from yapenv.consts import YAPENV_CONFIG_FILES
+from yapenv.consts import YAPENV_CONFIG_FILES, YAPENV_DEFAULT_CONFIG_FORMAT
 from yapenv.utils import deep_merge, resolve_path, get_collection_path, clean_data_types
 from yapenv.log import yapenv_log
 
@@ -103,7 +103,13 @@ class YAPENVEnvironmentConfig(dict):
         Paths is a list of string representations of dictionary paths.
         Ex: paths = ['a.b[0].c']
         """
-        return [get_collection_path(self, p) for p in paths]
+        found = []
+        for p in paths:
+            val, was_found = get_collection_path(self, p)
+            if not was_found:
+                continue
+            found.append(val)
+        return found
 
     def initialize_requirements(self):
         """Resolves the internal requirement imports and cleans up the requirements list"""
@@ -201,13 +207,10 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
         """If true, this config can inherit its parents"""
         return self.get("inherit", False)
 
-    def stop_inheritance(self) -> bool:
-        """If returns true, stops any further inheritance.
-        Overrideable function.
-        """
-        if self.inherit is not True:
-            return True
-        return False
+    @property
+    def inherit_siblings(self) -> bool:
+        """If true, this config can inherit its siblings"""
+        return self.get("inherit_siblings", True)
 
     def load_virtualenv(self):
         """Loads the virtual environment into python (using activate.py)."""
@@ -248,6 +251,50 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
         return os.path.isdir(self.venv_path)
 
     @classmethod
+    def _load_from_file(cls, filepath):
+        # resolving format
+        format = YAPENV_DEFAULT_CONFIG_FORMAT
+        if filepath.endswith(".yaml") or filepath.endswith(".yml"):
+            format = "yaml"
+        elif filepath.endswith(".json"):
+            format = "json"
+
+        with open(filepath, "r", encoding="utf-8") as config_file:
+            if format == "json":
+                config = json.loads(config_file.read())
+            else:
+                config = yaml.safe_load(config_file.read())
+
+        config = YAPENVConfig(config)
+        config.source_path = filepath
+
+        return config
+
+    @classmethod
+    def _load_from_siblings(
+        cls,
+        *filepaths: str,
+        log_loaded: bool = False,
+    ):
+        # Loads a configuration from a list of sibling configs.
+        siblings: List[YAPENVConfig] = []
+        for filepath in filepaths:
+            config = cls._load_from_file(filepath)
+            if log_loaded:
+                yapenv_log.debug("Loaded configuration file @ " + filepath)
+            if not config.inherit_siblings:
+                break
+            siblings.append(config)
+
+        if len(siblings) == 1:
+            return siblings[0]
+
+        # reverse the load order so first takes precedent.
+        siblings.reverse()
+
+        return YAPENVConfig(deep_merge({}, *siblings))
+
+    @classmethod
     def load(
         cls,
         config_path: str,
@@ -256,6 +303,8 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
         delete_environments: bool = True,
         resolve_imports: bool = True,
         clean_duplicate_requirements: bool = True,
+        ignore_missing_environment: bool = False,
+        config_file_paths: List[str] = YAPENV_CONFIG_FILES,
     ):
         """Loads the YAPENV environment configuration and initializes it.
 
@@ -263,6 +312,17 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
             config_path (str): The path/file to load the config from.
             environment (str, optional): The configuration environment to use. Defaults to None.
             inherit_depth (int, optional): If true, inherits configuration from parent directories. Defaults to True.
+            delete_environments (bool, optional): If true, deletes the environments collection from the final
+                result. Defaults to True.
+            resolve_imports (bool, optional): If true, resolves requires imports. Defaults to True.
+            clean_duplicate_requirements (bool, optional): If true, makes sure the requirements collection is unique.
+                Defaults to True.
+            ignore_missing_environment (bool, optional): If true, and the environment is missing, don't throw error.
+            config_file_paths (List[str], optional): A list of relative or absolute paths in which to search
+                for requirements. Defaults to YAPENV_CONFIG_FILES.
+
+        Returns:
+            YAPENVConfig: the merged configuration
         """
         if config_path.endswith("/"):
             config_path = config_path[:-1]
@@ -271,48 +331,20 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
         yapenv_log.debug("Reading configuration, starting from " + config_path)
 
         merge_configs: List[YAPENVConfig] = []
-        inherit_stopped = False
-
-        def load_config_from_file(filepath):
-            """Loads a config into the list.
-            Returns false if needs to stop loading.
-            """
-            nonlocal inherit_stopped
-            config = None
-            filepath = os.path.abspath(filepath)
-            if not os.path.isfile(filepath):
-                return
-
-            with open(filepath, "r", encoding="utf-8") as config_file:
-                if filepath.endswith(".yaml") or filepath.endswith(".yml"):
-                    config = yaml.safe_load(config_file.read())
-                else:
-                    config = json.loads(config_file.read())
-
-            if config is not None and isinstance(config, dict):
-                config = YAPENVConfig(config)
-                config.source_path = filepath
-                merge_configs.append(YAPENVConfig(config))
-                if config.stop_inheritance():
-                    inherit_stopped = True
-
-            yapenv_log.debug("Loaded config file: " + filepath)
-
-            return config
 
         config_filepath_groups: List[List[str]] = []
 
         if os.path.isfile(config_path):
             # If a direct file, this is not included in inheritance.
-            load_config_from_file(config_path)
+            config_filepath_groups.append([config_path])
             config_path = os.path.dirname(config_path)
-            yapenv_log.debug("Config path was a file, loading parent directory config " + config_path)
 
         source_directory = config_path
 
-        while not inherit_stopped:
+        # Finding configuration files.
+        while True:
             config_filepath_groups.append(
-                [os.path.join(config_path, filename) for filename in YAPENV_CONFIG_FILES],
+                [os.path.join(config_path, filename) for filename in config_file_paths],
             )
             parent_path = os.path.dirname(config_path)
             if parent_path is None or parent_path == config_path:
@@ -323,12 +355,12 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
             config_filepath_groups = config_filepath_groups[0 : inherit_depth + 1]  # noqa E203
 
         for fgroup in config_filepath_groups:
-            for fpath in fgroup:
-                load_config_from_file(fpath)
-
-                if inherit_stopped:
-                    break
-            if inherit_stopped:
+            fgroup = [fpath for fpath in fgroup if os.path.isfile(fpath)]
+            if len(fgroup) == 0:
+                continue
+            config = cls._load_from_siblings(*fgroup, log_loaded=True)
+            merge_configs.append(config)
+            if not config.inherit:
                 break
 
         # reversing the config merge order
@@ -343,7 +375,7 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
 
             config.initialize(resolve_imports=resolve_imports)
 
-        assert environment is None or environment_found, ValueError(
+        assert ignore_missing_environment or environment is None or environment_found, ValueError(
             f"No environment named '{environment}' was found in the config (or parent configs)"
         )
 

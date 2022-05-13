@@ -30,11 +30,12 @@ def delete(config: YAPENVConfig, force: bool = False):
     if config.has_virtual_environment():
         if not check_delete_environment(config, force=force):
             yapenv_log.info("Aborted")
-            return
+            return False
         shutil.rmtree(config.venv_path)
         yapenv_log.info("Delete virtual environment folder @ " + config.venv_path)
     else:
         yapenv_log.warn("No virtual environment @ " + config.venv_path)
+    return True
 
 
 def init(
@@ -129,7 +130,9 @@ def install(
         force (bool, optional): If true, dose not ask before resetting the virtual environment. Defaults to False.
     """
     if reset and config.has_virtual_environment():
-        delete(config, force=force)
+        if not delete(config, force=force):
+            yapenv_log.info("Virtual env was not deleted. Aborting.")
+            return
         yapenv_log.info("Deleted current virtual env")
 
     if reset or not config.has_virtual_environment():

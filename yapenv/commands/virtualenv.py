@@ -55,5 +55,5 @@ def virtualenv_create(config: YAPENVConfig):
     yapenv_log.debug(str(cmnd))
     run_python_module(*cmnd, use_venv=False)
 
-    if config.pip_config_path is not None:
-        virtualenv_update_files(config)
+    # Updating setup files.
+    virtualenv_update_files(config)
