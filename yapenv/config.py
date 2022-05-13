@@ -303,6 +303,7 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
         delete_environments: bool = True,
         resolve_imports: bool = True,
         clean_duplicate_requirements: bool = True,
+        ignore_missing_environment: bool = False,
         config_file_paths: List[str] = YAPENV_CONFIG_FILES,
     ):
         """Loads the YAPENV environment configuration and initializes it.
@@ -316,6 +317,7 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
             resolve_imports (bool, optional): If true, resolves requires imports. Defaults to True.
             clean_duplicate_requirements (bool, optional): If true, makes sure the requirements collection is unique.
                 Defaults to True.
+            ignore_missing_environment (bool, optional): If true, and the environment is missing, don't throw error.
             config_file_paths (List[str], optional): A list of relative or absolute paths in which to search
                 for requirements. Defaults to YAPENV_CONFIG_FILES.
 
@@ -373,7 +375,7 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
 
             config.initialize(resolve_imports=resolve_imports)
 
-        assert environment is None or environment_found, ValueError(
+        assert ignore_missing_environment or environment is None or environment_found, ValueError(
             f"No environment named '{environment}' was found in the config (or parent configs)"
         )
 

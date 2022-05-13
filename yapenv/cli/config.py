@@ -16,6 +16,7 @@ def get_config_values(
     dict_paths: List[str],
     resolve: bool = None,
     allow_null: bool = False,
+    allow_missing: bool = False,
     **kwargs,
 ):
     config = CommonOptions(kwargs).load(resolve_imports=resolve)
@@ -33,6 +34,8 @@ def get_config_values(
         was_found = len(rslt) > 0
 
     if not was_found:
+        if allow_missing:
+            return ""
         # Nothing was found. Throw error.
         raise ValueError(f"The dictionary path(s) were not found in the config, searched: {', '.join(dict_paths)}")
 
@@ -52,12 +55,14 @@ def print_config_values(
     dict_paths: List[str],
     resolve: bool = None,
     allow_null: bool = False,
+    allow_missing: bool = False,
     **kwargs,
 ):
     to_display = get_config_values(
         dict_paths=dict_paths,
         resolve=resolve,
         allow_null=allow_null,
+        allow_missing=allow_missing,
         **kwargs,
     )
 
@@ -72,7 +77,6 @@ def print_config_values(
     help="Print the yapenv computed configuration",
 )
 @click.option("--resolve", help="Resolve requirement files", is_flag=True, default=None)
-@click.option("--allow-null", help="Return null values", is_flag=True, default=False)
 @FormatOptions.decorator(PrintFormat.yaml)
 @CommonOptions.decorator()
 def view(
@@ -97,18 +101,21 @@ will print the entire config (same as view).
 )
 @click.option("--resolve", help="Resolve requirement files", is_flag=True, default=None)
 @click.option("--allow-null", help="Return null values", is_flag=True, default=False)
+@click.option("--allow-missing", help="Don't error on missing values, print nothing", is_flag=True, default=False)
 @FormatOptions.decorator(PrintFormat.yaml)
-@CommonOptions.decorator(path_as_option=True)
+@CommonOptions.decorator()
 @click.argument("dict_paths", nargs=-1)
 def get(
     dict_paths: List[str],
     resolve: bool = None,
     allow_null: bool = False,
+    allow_missing: bool = False,
     **kwargs,
 ):
     print_config_values(
         dict_paths=dict_paths,
         resolve=resolve,
         allow_null=allow_null,
+        allow_missing=allow_missing,
         **kwargs,
     )

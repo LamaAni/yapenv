@@ -12,8 +12,8 @@ class CommonOptions(dict):
     SHOW_FULL_ERRORS = None
 
     @property
-    def path(self) -> str:
-        return self.get("path", None)
+    def cwd(self) -> str:
+        return self.get("cwd", None)
 
     @property
     def environment(self) -> str:
@@ -39,7 +39,7 @@ class CommonOptions(dict):
             load_dotenv(env_file)
 
         config = YAPENVConfig.load(
-            self.path,
+            self.cwd,
             environment=None if ignore_environment else self.environment,
             inherit_depth=inherit_depth if inherit_depth is not None else self.inherit_depth,
             resolve_imports=resolve_imports,
@@ -52,20 +52,16 @@ class CommonOptions(dict):
         return config
 
     @classmethod
-    def decorator(cls, path_as_option: bool = False, long_args_only=False):
+    def decorator(cls, long_args_only=False):
         def apply(fn):
             opts = []
-            if path_as_option:
-                opts.append(
-                    click.option(
-                        "--path",
-                        help="The path to the yape config folder",
-                        default=os.curdir,
-                    )
-                )
-            else:
-                opts.append(click.argument("path", default=os.curdir))
             opts += [
+                click.option(
+                    "--cwd",
+                    "--source-path",
+                    help="Execute yapenv from this path (Current working directory)",
+                    default=os.curdir,
+                ),
                 click.option(
                     *(
                         [

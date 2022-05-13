@@ -16,7 +16,7 @@ def option_or_empty(key, val):
 
 def clean_args(*args: str):
     """Clean arguments for empty/null values"""
-    args = [str(a) for a in args if a is not None and len(a) > 0]
+    args = [str(a) for a in args if a is not None and len(str(a)) > 0]
     return args
 
 

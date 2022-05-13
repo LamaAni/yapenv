@@ -21,7 +21,7 @@ def shell(keep_current_directory: bool = False, **kwargs):
 @click.option("--keep-current-directory", help="Don't move into the venv directory", is_flag=True, default=False)
 @click.argument("command")
 @click.argument("args", nargs=-1)
-@CommonOptions.decorator(path_as_option=True, long_args_only=True)
+@CommonOptions.decorator(long_args_only=True)
 def run(command: str, args: List[str] = [], keep_current_directory: bool = False, **kwargs):
     config = CommonOptions(kwargs).load()
     config.load_virtualenv()

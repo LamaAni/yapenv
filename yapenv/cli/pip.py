@@ -18,7 +18,7 @@ def pip_command():
     + "If no packages specified, uses the yapenv configuration",
 )
 @FormatOptions.decorator(PrintFormat.cli, allow_quote=False)
-@CommonOptions.decorator(path_as_option=True)
+@CommonOptions.decorator()
 @click.argument("packages", nargs=-1)
 def pip_args(packages: List[str], **kwargs):
     config = CommonOptions(kwargs).load()
@@ -26,7 +26,7 @@ def pip_args(packages: List[str], **kwargs):
 
 
 @pip_command.command("install", help="Run pip install using the config (within this python version)")
-@CommonOptions.decorator(path_as_option=True)
+@CommonOptions.decorator()
 @click.argument("packages", nargs=-1)
 def pip_install(packages: List[str], **kwargs):
     config = CommonOptions(kwargs).load()

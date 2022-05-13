@@ -26,7 +26,7 @@ def delete(force: bool = False, **kwargs):
 @click.option("-r", "--reset", help="Reset the virtual environment", is_flag=True, default=False)
 @click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
 @click.argument("packages", nargs=-1)
-@CommonOptions.decorator(path_as_option=True)
+@CommonOptions.decorator()
 def install(
     packages: List[str],
     reset: bool = False,
@@ -53,6 +53,7 @@ def install(
 @click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
 @click.option("--no-install", help="Do not install after initializing", is_flag=True, default=False)
 @click.option("--no-requirement-files", help="Do not initialize with requirement files", is_flag=True, default=False)
+@click.option("--ignore-missing-env", help="Do not throw error on missing environment", is_flag=True, default=False)
 @click.option("--reset", help="Delete current configuration and reset it.", is_flag=True, default=False)
 @click.option("--init-depth", help="Number of parent folders to inherit the init config from. -1 = Inf", default=0)
 @click.option(
@@ -70,6 +71,7 @@ def init(
     no_install: bool = False,
     force: bool = False,
     init_depth: int = 0,
+    ignore_missing_env: bool = False,
     set_config_args: List[str] = [],
     **kwargs,
 ):
@@ -110,6 +112,7 @@ def init(
         python_version=python_version,
         config_filename=config_filename,
         add_requirement_files=not no_requirement_files,
+        ignore_missing_env=ignore_missing_env,
         merge_with=deep_merge({}, *merge_dicts),
     )
 
