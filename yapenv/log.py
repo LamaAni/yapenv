@@ -1,7 +1,7 @@
 import os
 import logging
 
-NO_COLOR = os.environ.get("NO_COLOR") == "true"
+NO_COLOR = os.environ.get("NO_COLOR","false").lower() == "true"
 
 
 class YAPENVLogFormatter(logging.Formatter):
