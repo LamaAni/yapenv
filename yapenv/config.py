@@ -260,10 +260,14 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
             format = "json"
 
         with open(filepath, "r", encoding="utf-8") as config_file:
-            if format == "json":
-                config = json.loads(config_file.read())
+            config_text = config_file.read()
+            if len(config_text.strip()) == 0:
+                config = {}
+            elif format == "json":
+                config = json.loads(config_text)
             else:
-                config = yaml.safe_load(config_file.read())
+                # None config should load some value.
+                config = yaml.safe_load(config_text) or {}
 
         config = YAPENVConfig(config)
         config.source_path = filepath
