@@ -5,7 +5,7 @@ import os
 import sys
 from typing import Any, Union, List, Dict
 from yapenv.consts import YAPENV_CONFIG_FILES, YAPENV_DEFAULT_CONFIG_FORMAT
-from yapenv.utils import deep_merge, resolve_path, get_collection_path, clean_data_types
+from yapenv.utils import deep_merge, find_files_from_filepath_globs, resolve_path, get_collection_path, clean_data_types
 from yapenv.log import yapenv_log
 
 
@@ -347,9 +347,7 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
 
         # Finding configuration files.
         while True:
-            config_filepath_groups.append(
-                [os.path.join(config_path, filename) for filename in config_file_paths],
-            )
+            config_filepath_groups.append(find_files_from_filepath_globs(*config_file_paths))
             parent_path = os.path.dirname(config_path)
             if parent_path is None or parent_path == config_path:
                 break
