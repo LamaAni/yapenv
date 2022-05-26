@@ -62,6 +62,27 @@ class YAPENVConfigRequirement(dict):
         cleaned.reverse()
         return cleaned
 
+class YAPENVConfigImport(dict):
+    @property
+    def path(self)->str:
+        return self.get("path",None)
+
+    @property
+    def recursive(self)->bool:
+        return self.get("recursive", False)
+
+    @classmethod
+    def parse(cls, config_import: Union[str, dict, "YAPENVConfigImport"]):
+        """Parse the string/dict and return the package requirement"""
+        if isinstance(config_import, cls):
+            return config_import
+        if isinstance(config_import, dict):
+            return cls(config_import)
+
+        assert isinstance(config_import, str), "Package dictionary must be a dict or string"
+        return cls(path=config_import.strip())
+
+
 
 class YAPENVEnvironmentConfig(dict):
     @property
@@ -188,6 +209,10 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
     def python_executable(self) -> str:
         """The path to the python executable to use"""
         return self.get("python_executable", None)
+
+    @property
+    def config_import(self)->List[]:
+        return None
 
     def resolve_from_venv_directory(self, *parts: List[str]):
         """Resolve path with the virtual env directory as root path"""
@@ -357,9 +382,6 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
             config_filepath_groups = config_filepath_groups[0 : inherit_depth + 1]  # noqa E203
 
         for fgroup in config_filepath_groups:
-            fgroup = [fpath for fpath in fgroup if os.path.isfile(fpath)]
-            if len(fgroup) == 0:
-                continue
             config = cls._load_from_siblings(*fgroup, log_loaded=True)
             merge_configs.append(config)
             if not config.inherit:
