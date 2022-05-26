@@ -150,7 +150,7 @@ We plan to support multiple python version per environment.
 
 Looking for help on this subject.
 
-# Licence
+# License
 
 Copyright ©
 `Zav Shotan`, `Patrick Huber`, and other [contributors](graphs/contributors).
