@@ -53,6 +53,7 @@ class YAPENVConfigRequirement(CascadingConfigDictionary):
             cleaned.append(r)
 
         cleaned.reverse()
+
         return cleaned
 
 
@@ -164,6 +165,23 @@ class YAPENVConfig(CascadingConfig):
         foo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(foo)
 
+    def clean_requirements(self):
+        """Clean the requirement list for all environments and remove duplicates"""
+        requirement_configs = [self, *self.environments.values()]
+
+        # First resolve to relative
+        req_config: YAPENVConfig = None
+        for req_config in requirement_configs:
+            if REQUIREMENTS_COLLECTION_NAME in req_config:
+                for requirement in req_config.requirements:
+                    if requirement.import_path is not None and os.path.isabs(requirement.import_path):
+                        requirement["import"] = os.path.relpath(requirement.import_path, self.source_directory)
+
+        # Now remove duplicates
+        for req_config in requirement_configs:
+            if REQUIREMENTS_COLLECTION_NAME in req_config:
+                req_config[REQUIREMENTS_COLLECTION_NAME] = YAPENVConfigRequirement.unique(req_config.requirements)
+
     @classmethod
     def load(
         cls,
@@ -173,6 +191,7 @@ class YAPENVConfig(CascadingConfig):
         load_imports: bool = True,
         search_paths: List[str] = YAPENV_CONFIG_FILES,
         parse_config=config_file_parser,
+        clean_requirements: bool = True,
     ):
         max_inherit_depth = max_inherit_depth if max_inherit_depth is not None else -1
         config = super().load(
@@ -184,11 +203,7 @@ class YAPENVConfig(CascadingConfig):
             parse_config,
         )
 
-        config[REQUIREMENTS_COLLECTION_NAME] = YAPENVConfigRequirement.unique(config.requirements)
-
-        # resolve to relative path
-        for requirement in config.requirements:
-            if requirement.import_path is not None:
-                requirement["import"] = os.path.relpath(requirement.import_path, config.source_directory)
+        if clean_requirements:
+            config.clean_requirements()
 
         return config

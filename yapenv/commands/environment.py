@@ -81,7 +81,7 @@ def init(
         to_merge.append(merge_with)
 
     init_config = YAPENVConfig(deep_merge({}, *to_merge))
-    init_config.initialize(environment=None)
+    init_config.clean_requirements()
 
     init_config.python_version = python_version or init_config.get("python_version")
 
