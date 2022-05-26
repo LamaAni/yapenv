@@ -38,7 +38,7 @@ def virtualenv_update_files(config: YAPENVConfig):
     if config.pip_config_path is not None:
         config_path = config.resolve_from_source_directory(config.pip_config_path)
         if not os.path.isfile(config_path):
-            yapenv_log.warn("Could not set custom config path, pip_config_path not found @ " + config_path)
+            yapenv_log.warning("Could not set custom config path, pip_config_path not found @ " + config_path)
         else:
             os.symlink(config_path, venv_config_path)
             yapenv_log.info("Linked virtual env pip.conf -> " + config_path)

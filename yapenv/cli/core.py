@@ -1,4 +1,5 @@
 import os
+from typing import List
 import click
 from yapenv.cli.options import CommonOptions
 from yapenv.consts import YAPENV_VERSION
@@ -15,14 +16,19 @@ def version():
     print(YAPENV_VERSION)
 
 
-def run_cli_main():
+def run_cli_main(args: List[str] = None):
     import sys
 
     if "--full-errors" in sys.argv:
         CommonOptions.SHOW_FULL_ERRORS = True
 
     try:
-        yapenv()
+        if args is None:
+            yapenv()
+        else:
+            args = list(args)
+            yapenv.main(args)
+
     except Exception as ex:
         if CommonOptions.SHOW_FULL_ERRORS is None:
             CommonOptions.SHOW_FULL_ERRORS = os.environ.get("YAPENV_FULL_ERRORS", "false").lower() == "true"

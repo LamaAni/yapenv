@@ -1,10 +1,10 @@
 import os
 from typing import Union
 import click
+from bole.format import PrintFormat, get_print_formatted
 from dotenv import load_dotenv
 from yapenv.consts import YAPENV_CONFIG_FILES
 from yapenv.log import yapenv_log
-from yapenv.format import PrintFormat, get_print_formatted
 from yapenv.config import YAPENVConfig
 from yapenv.utils import resolve_path
 
@@ -38,7 +38,7 @@ class CommonOptions(dict):
 
     def load(
         self,
-        resolve_imports: bool = True,
+        import_requirements: bool = True,
         ignore_environment: bool = False,
         inherit_depth: int = None,
     ) -> YAPENVConfig:
@@ -50,15 +50,19 @@ class CommonOptions(dict):
         config = YAPENVConfig.load(
             self.cwd,
             environment=None if ignore_environment else self.environment,
-            inherit_depth=inherit_depth if inherit_depth is not None else self.inherit_depth,
-            ignore_missing_environment=self.ignore_missing_env,
-            resolve_imports=resolve_imports,
-            config_file_paths=YAPENV_CONFIG_FILES + self.extra_config_file,
+            max_inherit_depth=inherit_depth if inherit_depth is not None else self.inherit_depth,
+            load_imports=True,
+            search_paths=YAPENV_CONFIG_FILES + self.extra_config_file,
         )
 
-        if os.path.isfile(env_file):
-            yapenv_log.debug("Loading environment variables from: " + env_file)
-            load_dotenv(env_file)
+        if import_requirements:
+            config.load_requirements()
+
+        if config.env_file is not None:
+            env_file = resolve_path(config.env_file)
+            if os.path.isfile(env_file):
+                yapenv_log.debug("Loading environment variables from: " + env_file)
+                load_dotenv(env_file)
 
         return config
 

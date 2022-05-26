@@ -5,6 +5,11 @@ name: Upload Python Package
 on:
   release:
     types: [created]
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -16,14 +21,10 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install dependencies
+      - name: Install ci dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install flake8 setuptools wheel twine
-
-      - name: Lint
-        run: |
-          flake8 --verbose
+          pip install . &&
+            yapenv requirements export --env ci | xargs pip install
 
       - name: Prepare version
         env:
@@ -34,11 +35,24 @@ jobs:
           echo "${GITHUB_REF##*/}" > "$VERSION_PATH" || exit $?
           cat "$VERSION_PATH"
 
-      - name: Build and publish
+      - name: Lint
+        run: |
+          flake8 --verbose
+
+      - name: Test
+        run: |
+          ./test tests -v
+
+      - name: Build
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
           VERSION_PATH: "yapenv/.version"
         run: |
           python setup.py sdist bdist_wheel
+
+      - name: Build and publish
+        if: ${{ github.event_name=='release' }}
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
           twine upload dist/*

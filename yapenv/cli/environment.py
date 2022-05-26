@@ -90,7 +90,7 @@ def init(
 
     options = CommonOptions(kwargs)
     config = options.load(
-        resolve_imports=False,
+        import_requirements=False,
         ignore_environment=True,
         inherit_depth=init_depth,
     )
@@ -115,7 +115,7 @@ def init(
 
     if not no_install:
         # Reload config
-        config = CommonOptions(kwargs).load(resolve_imports=True)
+        config = CommonOptions(kwargs).load(import_requirements=True)
 
         # Update the venv files.
         if not reset and config.has_virtual_environment():

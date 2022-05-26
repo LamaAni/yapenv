@@ -12,6 +12,8 @@ Yet Another Python Environment manager (with less options).
 1. Named environments with per-environment configuration (test, dev, beta, prod, etc...).
 1. CLI interface with easy initialization.
 
+NOTE: `yapenv` uses the package [bole](https://github.com/LamaAni/bole) to handle configuration and logging
+
 ## Install
 
 ```shell
@@ -150,7 +152,7 @@ We plan to support multiple python version per environment.
 
 Looking for help on this subject.
 
-# Licence
+# License
 
 Copyright ©
 `Zav Shotan`, `Patrick Huber`, and other [contributors](graphs/contributors).

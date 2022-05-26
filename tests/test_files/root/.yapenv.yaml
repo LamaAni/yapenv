@@ -1,0 +1,16 @@
+# From bole
+settings:
+  inherit: true
+
+python_version: "3.9"
+venv_directory: .venv
+
+environments:
+  test:
+    requirements:
+      - import: requirements.test.txt
+
+requirements:
+  - import: requirements.txt
+
+test_val: "source"

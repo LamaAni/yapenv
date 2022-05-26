@@ -2,6 +2,10 @@ environments:
   dev:
     requirements:
       - import: requirements.dev.txt
+  ci:
+    requirements:
+      - import: requirements.ci.txt
+
 pip_config_path: pip.conf
 python_version: "3.9"
 requirements:

@@ -1,0 +1,7 @@
+python_version: "3.9"
+requirements:
+  - import: requirements.txt
+venv_directory: .venv
+
+test_val: "parent"
+parent_val: "parent"
