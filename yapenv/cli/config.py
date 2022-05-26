@@ -19,7 +19,7 @@ def get_config_values(
     allow_missing: bool = False,
     **kwargs,
 ):
-    config = CommonOptions(kwargs).load(resolve_imports=resolve)
+    config = CommonOptions(kwargs).load(import_requirements=resolve)
     rslt = None
     was_found = False
     if len(dict_paths) == 0:
@@ -28,7 +28,7 @@ def get_config_values(
         was_found = True
     else:
         # Search for paths in the config
-        rslt = config.search(*dict_paths)
+        rslt = config.find(*dict_paths)
         # Clean the values from custom python types
         rslt = [clean_data_types(v) for v in rslt]
         was_found = len(rslt) > 0
