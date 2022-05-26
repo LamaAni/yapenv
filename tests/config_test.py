@@ -1,12 +1,6 @@
 from typing import List
-from tests.consts import CLI_COMMON_ARGS, TEST_PATH
+from tests.consts import TEST_PATH
 from yapenv.config import YAPENVConfig
-
-
-def test_yapenv_cli_read_config():
-    from yapenv.cli import yapenv
-
-    yapenv.main(["config", "view", *CLI_COMMON_ARGS], standalone_mode=False)
 
 
 def test_yapenv_read_config(
