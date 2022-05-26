@@ -23,7 +23,7 @@ class YAPENVConfigRequirement(CascadingConfigDictionary):
     @property
     def import_path(self) -> str:
         """A path to a requirements file to import (relative to config root)"""
-        return self.get("import_path", self.get("import", None))
+        return self.get("import", None)
 
     @classmethod
     def parse(cls, val: Union[str, dict, List[dict]]):
@@ -101,7 +101,10 @@ class YAPENVConfig(CascadingConfig):
     @property
     def requirements(self) -> List[YAPENVConfigRequirement]:
         """A list of pip requirements"""
-        return YAPENVConfigRequirement.parse_list(self.get(REQUIREMENTS_COLLECTION_NAME, []))
+        self[REQUIREMENTS_COLLECTION_NAME] = YAPENVConfigRequirement.parse_list(
+            self.get(REQUIREMENTS_COLLECTION_NAME, [])
+        )
+        return self[REQUIREMENTS_COLLECTION_NAME]
 
     def has_virtual_environment(self) -> dict:
         """True if a virtual environment exists"""
@@ -122,7 +125,7 @@ class YAPENVConfig(CascadingConfig):
         # requirements to have the proper relative path to the source.
         for requirement in self.requirements:
             if requirement.import_path is not None:
-                requirement["import"] = resolve_path(requirement.import_path, self.source_directory)
+                requirement["import"] = self.resolve_from_source_directory(requirement.import_path)
 
     def load_requirements(self):
         """Resolves and loads the internal requirement imports and cleans up the requirements list"""
@@ -180,6 +183,8 @@ class YAPENVConfig(CascadingConfig):
             search_paths,
             parse_config,
         )
+
+        config[REQUIREMENTS_COLLECTION_NAME] = YAPENVConfigRequirement.unique(config.requirements)
 
         # resolve to relative path
         for requirement in config.requirements:

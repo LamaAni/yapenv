@@ -14,7 +14,7 @@ def check_delete_environment(config: YAPENVConfig, force: bool = False):
     """Helper: prompt to ask"""
     if force:
         return True
-    yapenv_log.warn("You are about to delete the virtual environment @ " + config.venv_path)
+    yapenv_log.warning("You are about to delete the virtual environment @ " + config.venv_path)
     if input("WARNING: are you sure? (y/n) ") != "y":
         return False
     return True
@@ -34,7 +34,7 @@ def delete(config: YAPENVConfig, force: bool = False):
         shutil.rmtree(config.venv_path)
         yapenv_log.info("Delete virtual environment folder @ " + config.venv_path)
     else:
-        yapenv_log.warn("No virtual environment @ " + config.venv_path)
+        yapenv_log.warning("No virtual environment @ " + config.venv_path)
     return True
 
 
@@ -61,20 +61,16 @@ def init(
     to_merge.append(
         YAPENVConfig.load(
             resolve_template("config.yaml"),
-            inherit_depth=0,
-            resolve_imports=False,
-            delete_environments=False,
-            clean_duplicate_requirements=False,
+            max_inherit_depth=0,
+            load_imports=False,
         )
     )
     if add_requirement_files:
         to_merge.append(
             YAPENVConfig.load(
                 resolve_template("config_with_requirements.yaml"),
-                inherit_depth=0,
-                resolve_imports=False,
-                delete_environments=False,
-                clean_duplicate_requirements=False,
+                max_inherit_depth=0,
+                load_imports=False,
             )
         )
 
@@ -85,7 +81,7 @@ def init(
         to_merge.append(merge_with)
 
     init_config = YAPENVConfig(deep_merge({}, *to_merge))
-    init_config.initialize(resolve_imports=False)
+    init_config.initialize(environment=None)
 
     init_config.python_version = python_version or init_config.get("python_version")
 
@@ -142,4 +138,4 @@ def install(
         pip_install(config, packages)
         yapenv_log.info("Success")
     else:
-        yapenv_log.warn("No requirements found in config. Skipping pip install")
+        yapenv_log.warning("No requirements found in config. Skipping pip install")
