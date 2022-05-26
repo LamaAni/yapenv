@@ -62,27 +62,6 @@ class YAPENVConfigRequirement(dict):
         cleaned.reverse()
         return cleaned
 
-class YAPENVConfigImport(dict):
-    @property
-    def path(self)->str:
-        return self.get("path",None)
-
-    @property
-    def recursive(self)->bool:
-        return self.get("recursive", False)
-
-    @classmethod
-    def parse(cls, config_import: Union[str, dict, "YAPENVConfigImport"]):
-        """Parse the string/dict and return the package requirement"""
-        if isinstance(config_import, cls):
-            return config_import
-        if isinstance(config_import, dict):
-            return cls(config_import)
-
-        assert isinstance(config_import, str), "Package dictionary must be a dict or string"
-        return cls(path=config_import.strip())
-
-
 
 class YAPENVEnvironmentConfig(dict):
     @property
@@ -210,10 +189,6 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
         """The path to the python executable to use"""
         return self.get("python_executable", None)
 
-    @property
-    def config_import(self)->List[]:
-        return None
-
     def resolve_from_venv_directory(self, *parts: List[str]):
         """Resolve path with the virtual env directory as root path"""
         return resolve_path(*parts, root_directory=self.venv_path)
@@ -284,15 +259,19 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
         elif filepath.endswith(".json"):
             format = "json"
 
-        with open(filepath, "r", encoding="utf-8") as config_file:
-            config_text = config_file.read()
-            if len(config_text.strip()) == 0:
-                config = {}
-            elif format == "json":
-                config = json.loads(config_text)
-            else:
-                # None config should load some value.
-                config = yaml.safe_load(config_text) or {}
+        if os.path.isfile(filepath):
+            with open(filepath, "r", encoding="utf-8") as config_file:
+                config_text = config_file.read()
+        else:
+            config_text = ""
+
+        if len(config_text.strip()) == 0:
+            config = {}
+        elif format == "json":
+            config = json.loads(config_text)
+        else:
+            # None config should load some value.
+            config = yaml.safe_load(config_text) or {}
 
         config = YAPENVConfig(config)
         config.source_path = filepath
