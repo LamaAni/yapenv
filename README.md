@@ -1,6 +1,8 @@
 # yapenv
 
-## Beta
+## Alpha
+
+WARNING: This repo is still in alpha development phase and structure is subject to change.
 
 Yet Another Python Environment manager (with less options).
 
