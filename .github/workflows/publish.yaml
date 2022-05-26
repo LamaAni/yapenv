@@ -41,7 +41,7 @@ jobs:
 
       - name: Test
         run: |
-          pytest tests -v
+          ./test tests -v
 
       - name: Build
         env:
