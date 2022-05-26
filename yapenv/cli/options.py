@@ -1,10 +1,10 @@
 import os
 from typing import Union
 import click
+from bole.format import PrintFormat, get_print_formatted
 from dotenv import load_dotenv
 from yapenv.consts import YAPENV_CONFIG_FILES
 from yapenv.log import yapenv_log
-from yapenv.format import PrintFormat, get_print_formatted
 from yapenv.config import YAPENVConfig
 from yapenv.utils import resolve_path
 

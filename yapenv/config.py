@@ -1,13 +1,10 @@
 import re
-import yaml
-import json
 import os
 import sys
-from typing import Any, Union, List, Dict
+from typing import Union, List
 from bole.config import CascadingConfig, CascadingConfigDictionary, config_file_parser
-from yapenv.consts import YAPENV_CONFIG_FILES, YAPENV_DEFAULT_CONFIG_FORMAT
-from yapenv.utils import deep_merge, find_files_from_filepath_globs, resolve_path, get_collection_path, clean_data_types
-from yapenv.log import yapenv_log
+from yapenv.consts import YAPENV_CONFIG_FILES
+from yapenv.utils import resolve_path
 
 
 REQUIREMENTS_COLLECTION_NAME = "requirements"
@@ -27,6 +24,12 @@ class YAPENVConfigRequirement(CascadingConfigDictionary):
     def import_path(self) -> str:
         """A path to a requirements file to import (relative to config root)"""
         return self.get("import_path", self.get("import", None))
+
+    @classmethod
+    def parse(cls, val: Union[str, dict, List[dict]]):
+        if isinstance(val, str):
+            val = {"package": val}
+        return super().parse(val)
 
     @classmethod
     def unique(cls, requirements: List[Union["YAPENVConfigRequirement", dict]]):
@@ -129,7 +132,7 @@ class YAPENVConfig(CascadingConfig):
         resolved_requirements = []
         for req in self.requirements:
             if req.import_path is not None:
-                abs_import_path = os.path.abspath(resolve_path(req.import_path, self._source_directory))
+                abs_import_path = os.path.abspath(self.resolve_from_source_directory(req.import_path))
 
                 if os.path.isfile(abs_import_path):
                     with open(abs_import_path, "r", encoding="utf-8") as req_file:

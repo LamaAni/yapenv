@@ -2,7 +2,7 @@ import click
 from typing import List
 
 import yapenv.commands as yapenv_commands
-from yapenv.format import PrintFormat
+from bole.format import PrintFormat
 from yapenv.cli.options import CommonOptions, FormatOptions
 from yapenv.cli.core import yapenv
 
