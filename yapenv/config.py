@@ -5,7 +5,7 @@ import os
 import sys
 from typing import Any, Union, List, Dict
 from yapenv.consts import YAPENV_CONFIG_FILES, YAPENV_DEFAULT_CONFIG_FORMAT
-from yapenv.utils import deep_merge, resolve_path, get_collection_path, clean_data_types
+from yapenv.utils import deep_merge, find_files_from_filepath_globs, resolve_path, get_collection_path, clean_data_types
 from yapenv.log import yapenv_log
 
 
@@ -259,15 +259,19 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
         elif filepath.endswith(".json"):
             format = "json"
 
-        with open(filepath, "r", encoding="utf-8") as config_file:
-            config_text = config_file.read()
-            if len(config_text.strip()) == 0:
-                config = {}
-            elif format == "json":
-                config = json.loads(config_text)
-            else:
-                # None config should load some value.
-                config = yaml.safe_load(config_text) or {}
+        if os.path.isfile(filepath):
+            with open(filepath, "r", encoding="utf-8") as config_file:
+                config_text = config_file.read()
+        else:
+            config_text = ""
+
+        if len(config_text.strip()) == 0:
+            config = {}
+        elif format == "json":
+            config = json.loads(config_text)
+        else:
+            # None config should load some value.
+            config = yaml.safe_load(config_text) or {}
 
         config = YAPENVConfig(config)
         config.source_path = filepath
@@ -347,9 +351,7 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
 
         # Finding configuration files.
         while True:
-            config_filepath_groups.append(
-                [os.path.join(config_path, filename) for filename in config_file_paths],
-            )
+            config_filepath_groups.append(find_files_from_filepath_globs(*config_file_paths))
             parent_path = os.path.dirname(config_path)
             if parent_path is None or parent_path == config_path:
                 break
@@ -359,9 +361,6 @@ class YAPENVConfig(YAPENVEnvironmentConfig):
             config_filepath_groups = config_filepath_groups[0 : inherit_depth + 1]  # noqa E203
 
         for fgroup in config_filepath_groups:
-            fgroup = [fpath for fpath in fgroup if os.path.isfile(fpath)]
-            if len(fgroup) == 0:
-                continue
             config = cls._load_from_siblings(*fgroup, log_loaded=True)
             merge_configs.append(config)
             if not config.inherit:

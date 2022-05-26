@@ -5,7 +5,7 @@ import logging
 
 REPO_PATH = os.path.dirname(os.path.abspath(__file__))
 VERSION_PATH = os.path.abspath(os.environ.get("VERSION_PATH", os.path.join(REPO_PATH, ".version")))
-GITHUB_URL = "https://github.com/LamaAni/yapenv.git"
+GITHUB_URL = "https://github.com/LamaAni/yapenv"
 
 packages = find_packages()
 

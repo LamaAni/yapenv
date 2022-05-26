@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import re
@@ -44,6 +45,17 @@ def resolve_template(*path: str):
         *path,
         root_directory=os.path.join(os.path.dirname(__file__), "templates"),
     )
+
+
+def find_files_from_filepath_globs(*filepath_globs: str):
+    files: List[str] = []
+    for fglob in filepath_globs:
+        fglob = resolve_path(fglob)
+        if "*" not in fglob and "?" not in fglob:
+            files.append(fglob)
+        else:
+            files += glob.glob(fglob, recursive=True)
+    return files
 
 
 def resolve_path(*path_parts: str, root_directory: str = None):

@@ -2,6 +2,7 @@ import os
 from typing import Union
 import click
 from dotenv import load_dotenv
+from yapenv.consts import YAPENV_CONFIG_FILES
 from yapenv.log import yapenv_log
 from yapenv.format import PrintFormat, get_print_formatted
 from yapenv.config import YAPENVConfig
@@ -24,8 +25,16 @@ class CommonOptions(dict):
         return self.get("inherit_depth", None)
 
     @property
+    def ignore_missing_env(self) -> bool:
+        return self.get("ignore_missing_env", False)
+
+    @property
     def env_file(self) -> str:
         return self.get("env_file", os.environ.get("YAPENV_ENV_FILE", ".env"))
+
+    @property
+    def extra_config_file(self) -> str:
+        return list(self.get("extra_config_file", []))
 
     def load(
         self,
@@ -42,7 +51,9 @@ class CommonOptions(dict):
             self.cwd,
             environment=None if ignore_environment else self.environment,
             inherit_depth=inherit_depth if inherit_depth is not None else self.inherit_depth,
+            ignore_missing_environment=self.ignore_missing_env,
             resolve_imports=resolve_imports,
+            config_file_paths=YAPENV_CONFIG_FILES + self.extra_config_file,
         )
 
         if os.path.isfile(env_file):
@@ -75,6 +86,12 @@ class CommonOptions(dict):
                     help="Name of the extra environment config to load",
                     default=None,
                 ),
+                click.option(
+                    "--extra-config-file",
+                    help="Either the config file or a glob pattern config file.",
+                    default=None,
+                    multiple=True,
+                ),
                 click.option("--env-file", help="The yapenv environment local env file", default=".env"),
                 click.option(
                     "--inherit-depth",
@@ -83,6 +100,12 @@ class CommonOptions(dict):
                     type=int,
                 ),
                 click.option("--full-errors", help="Show full python errors", is_flag=True),
+                click.option(
+                    "--ignore-missing-env",
+                    help="Do not throw error if environment was not found",
+                    is_flag=True,
+                    default=False,
+                ),
             ]
             for opt in opts:
                 fn = opt(fn)
