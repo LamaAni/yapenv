@@ -1,6 +1,5 @@
 import tempfile
 import yapenv.commands as yapenv_commands
-from tests.consts import TEST_PATH
 from yapenv.config import YAPENVConfig
 
 
