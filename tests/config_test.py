@@ -1,3 +1,4 @@
+import re
 from typing import List
 from tests.consts import TEST_PATH
 from yapenv.config import YAPENVConfig
@@ -44,6 +45,11 @@ def test_yapenv_read_requirements(
     resolved_packages = [r.package for r in config.requirements if r.package is not None]
     for package in packages:
         assert package in resolved_packages, "Package expected but not found " + package
+
+    resolved_package_names = [re.split(r"[=><]+", p)[0] for p in resolved_packages]
+    assert len(set(resolved_package_names)) == len(
+        resolved_package_names
+    ), "Invalid package resolve, duplicate packages exist"
 
 
 def test_yapenv_read_requirements_in_env():

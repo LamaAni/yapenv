@@ -11,6 +11,7 @@ environments:
       - import: requirements.test.txt
 
 requirements:
+  - pyyaml==5.8
   - import: requirements.txt
 
 test_val: "source"

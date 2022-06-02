@@ -154,6 +154,7 @@ class YAPENVConfig(CascadingConfig):
                 resolved_requirements.append(req)
 
         self[REQUIREMENTS_COLLECTION_NAME] = resolved_requirements
+        self.clean_requirements()
 
     def load_virtualenv(self):
         """Loads the virtual environment into python (using activate.py)."""
