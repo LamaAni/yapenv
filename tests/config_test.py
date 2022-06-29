@@ -23,7 +23,6 @@ def test_yapenv_read_config(
 
 def test_yapenv_read_pip_config_file(
     config: YAPENVConfig = None,
-    values: dict = None,
 ):
     config = config or YAPENVConfig.load(TEST_PATH)
     config_path = os.path.abspath(os.path.join(TEST_PATH, config.pip_config_path))
