@@ -62,7 +62,8 @@ class YAPENVConfig(CascadingConfig):
         "pip_config_path",
         "env_file",
     ]
-    """A collection of dictionary keys to resolve as paths, when calling init.
+    """A collection of configuration keys to resolve as paths. The resolve will be called relative
+    to the location of the config file.
     """
 
     @property
