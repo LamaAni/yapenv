@@ -3,5 +3,7 @@ requirements:
   - import: requirements.txt
 venv_directory: .venv
 
+pip_config_path: "../../pip.conf"
+
 test_val: "parent"
 parent_val: "parent"
