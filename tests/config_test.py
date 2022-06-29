@@ -1,4 +1,5 @@
 import re
+import os
 from typing import List
 from tests.consts import TEST_PATH
 from yapenv.config import YAPENVConfig
@@ -18,6 +19,18 @@ def test_yapenv_read_config(
     for key in values.keys():
         val = config.find(key)[0]
         assert val == values[key], f"Invalid config value {key}, {values[key]} != {val}"
+
+
+def test_yapenv_read_pip_config_file(
+    config: YAPENVConfig = None,
+    values: dict = None,
+):
+    config = config or YAPENVConfig.load(TEST_PATH)
+    config_path = os.path.abspath(os.path.join(TEST_PATH, config.pip_config_path))
+
+    assert os.path.isfile(
+        config_path
+    ), f"Expected config file @ {config_path} is missing, invalid path or invalid path resolve"
 
 
 def test_yapenv_read_requirements(
