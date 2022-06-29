@@ -58,6 +58,13 @@ class YAPENVConfigRequirement(CascadingConfigDictionary):
 
 
 class YAPENVConfig(CascadingConfig):
+    RESOLVE_PATH_KEYS = [
+        "pip_config_path",
+        "env_file",
+    ]
+    """A collection of dictionary keys to resolve as paths, when calling init.
+    """
+
     @property
     def env_file(self) -> str:
         return self.get("env_file", ".env")
@@ -122,6 +129,10 @@ class YAPENVConfig(CascadingConfig):
     def initialize(self, environment: str = None):
         super().initialize(environment)
 
+        for key in self.RESOLVE_PATH_KEYS:
+            if isinstance(self.get(key, None), str):
+                self[key] = self.resolve_from_source_directory(self[key])
+
         # Resolve the requirement for absolute imports. This is to allow
         # requirements to have the proper relative path to the source.
         for requirement in self.requirements:
@@ -169,6 +180,11 @@ class YAPENVConfig(CascadingConfig):
     def clean_requirements(self):
         """Clean the requirement list for all environments and remove duplicates"""
         requirement_configs = [self, *self.environments.values()]
+
+        # Resolve to relative the base path keys
+        for key in self.RESOLVE_PATH_KEYS:
+            if isinstance(self.get(key, None), str):
+                self[key] = os.path.relpath(self[key], self.source_directory)
 
         # First resolve to relative
         req_config: YAPENVConfig = None
