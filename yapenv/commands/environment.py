@@ -2,6 +2,8 @@ import json
 import shutil
 from typing import List
 import yaml
+import sys
+import os
 from yapenv.log import yapenv_log
 from yapenv.consts import YAPENV_CONFIG_FILES
 from yapenv.config import YAPENVConfig
@@ -27,6 +29,11 @@ def delete(config: YAPENVConfig, force: bool = False):
         config (YAPENVConfig): The config
         force (bool, optional): Do not ask before deleting. Defaults to False.
     """
+    # Check if running from within the virtual environment
+    if sys.executable.startswith(config.venv_path):
+        raise Exception("Cannot delete the currently executing virtual environment")
+
+    # Check active virtual environment
     if config.has_virtual_environment():
         if not check_delete_environment(config, force=force):
             yapenv_log.info("Aborted")

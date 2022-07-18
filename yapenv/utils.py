@@ -6,6 +6,8 @@ import subprocess
 import sys
 import shlex
 from typing import List, Union
+from shutil import which
+
 
 
 def option_or_empty(key, val):
@@ -113,7 +115,7 @@ def run_python_module(
     use_venv: bool = True,
 ):
     if executable is None:
-        if use_venv and os.environ.get("VIRTUAL_ENV", None) is not None:
+        if use_venv and os.environ.get("VIRTUAL_ENV", None) is not None and which("python") is not None:
             executable = "python"
         else:
             executable = sys.executable
