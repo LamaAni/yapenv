@@ -3,7 +3,6 @@ import shutil
 from typing import List
 import yaml
 import sys
-import os
 from yapenv.log import yapenv_log
 from yapenv.consts import YAPENV_CONFIG_FILES
 from yapenv.config import YAPENVConfig
