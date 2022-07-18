@@ -9,7 +9,6 @@ from typing import List, Union
 from shutil import which
 
 
-
 def option_or_empty(key, val):
     """Return a key/value option if val is not None"""
     if val is None:
