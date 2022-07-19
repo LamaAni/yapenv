@@ -155,5 +155,5 @@ Looking for help on this subject.
 # License
 
 Copyright ©
-`Zav Shotan`, `Patrick Huber`, and other [contributors](graphs/contributors).
+`Zav Shotan` and other [contributors](graphs/contributors).
 It is free software, released under the MIT licence, and may be redistributed under the terms specified in `LICENSE`.
