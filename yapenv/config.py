@@ -131,7 +131,9 @@ class YAPENVConfig(CascadingConfig):
         return resolve_path(
             *parts,
             root_directory=self.venv_local_folder_path
-            if os.path.exists(self.venv_local_folder_path) # Case where local path exists
+            if os.path.exists(
+                self.venv_local_folder_path
+            )  # Case where local path exists
             else self.venv_path,
         )
 
