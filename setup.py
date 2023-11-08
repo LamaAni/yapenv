@@ -31,7 +31,7 @@ else:
     logging.info("Version file not found @ " + VERSION_PATH)
     logging.info("Using default version debug")
 
-version = version or os.environ.get("SETUP_VERSION", "debug")
+version = version or os.environ.get("SETUP_VERSION", "0.0.0")
 
 setup(
     name="yapenv",  # Required
