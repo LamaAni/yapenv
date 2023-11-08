@@ -6,7 +6,7 @@ environments:
     requirements:
     - import: requirements.dev.txt
 pip_config_path: pip.conf
-python_version: '3.10'
+python_version: '3.11'
 requirements:
 - import: requirements.txt
 venv_directory: .venv
