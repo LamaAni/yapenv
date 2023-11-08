@@ -50,7 +50,9 @@ class CommonOptions(dict):
         config = YAPENVConfig.load(
             self.cwd,
             environment=None if ignore_environment else self.environment,
-            max_inherit_depth=inherit_depth if inherit_depth is not None else self.inherit_depth,
+            max_inherit_depth=inherit_depth
+            if inherit_depth is not None
+            else self.inherit_depth,
             load_imports=True,
             search_paths=YAPENV_CONFIG_FILES + self.extra_config_file,
         )
@@ -96,14 +98,20 @@ class CommonOptions(dict):
                     default=None,
                     multiple=True,
                 ),
-                click.option("--env-file", help="The yapenv environment local env file", default=".env"),
+                click.option(
+                    "--env-file",
+                    help="The yapenv environment local env file",
+                    default=".env",
+                ),
                 click.option(
                     "--inherit-depth",
                     help="Max number of config parents to inherit (0 to disable, -1 inf)",
                     default=None,
                     type=int,
                 ),
-                click.option("--full-errors", help="Show full python errors", is_flag=True),
+                click.option(
+                    "--full-errors", help="Show full python errors", is_flag=True
+                ),
                 click.option(
                     "--ignore-missing-env",
                     help="Do not throw error if environment was not found",
@@ -132,7 +140,9 @@ class FormatOptions(dict):
         return get_print_formatted(self.format, val, quote)
 
     @classmethod
-    def decorator(cls, default_format: PrintFormat = PrintFormat.cli, allow_quote: bool = True):
+    def decorator(
+        cls, default_format: PrintFormat = PrintFormat.cli, allow_quote: bool = True
+    ):
         def apply(*args):
             opts = [
                 click.option(
@@ -144,7 +154,14 @@ class FormatOptions(dict):
             ]
 
             if allow_quote:
-                opts.append(click.option("--no-quote", help="Do not quote cli arguments", is_flag=True, default=False))
+                opts.append(
+                    click.option(
+                        "--no-quote",
+                        help="Do not quote cli arguments",
+                        is_flag=True,
+                        default=False,
+                    )
+                )
 
             for opt in opts:
                 fn = opt(*args)

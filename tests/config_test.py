@@ -49,12 +49,18 @@ def test_yapenv_read_requirements(
         "pyyaml==6.0",
     ]
 
-    requrement_paths = [r.import_path for r in config.requirements if r.import_path is not None]
+    requrement_paths = [
+        r.import_path for r in config.requirements if r.import_path is not None
+    ]
     for fpath in file_imports:
-        assert fpath in requrement_paths, "Requirement path not found in requirements: " + fpath
+        assert fpath in requrement_paths, (
+            "Requirement path not found in requirements: " + fpath
+        )
 
     config.load_requirements()
-    resolved_packages = [r.package for r in config.requirements if r.package is not None]
+    resolved_packages = [
+        r.package for r in config.requirements if r.package is not None
+    ]
     for package in packages:
         assert package in resolved_packages, "Package expected but not found " + package
 

@@ -37,7 +37,9 @@ def get_config_values(
         if allow_missing:
             return ""
         # Nothing was found. Throw error.
-        raise ValueError(f"The dictionary path(s) were not found in the config, searched: {', '.join(dict_paths)}")
+        raise ValueError(
+            f"The dictionary path(s) were not found in the config, searched: {', '.join(dict_paths)}"
+        )
 
     if not allow_null and any(v is None for v in rslt):
         raise ValueError("Found null values in path(s): " + ", ".join(dict_paths))
@@ -101,7 +103,12 @@ will print the entire config (same as view).
 )
 @click.option("--resolve", help="Resolve requirement files", is_flag=True, default=None)
 @click.option("--allow-null", help="Return null values", is_flag=True, default=False)
-@click.option("--allow-missing", help="Don't error on missing values, print nothing", is_flag=True, default=False)
+@click.option(
+    "--allow-missing",
+    help="Don't error on missing values, print nothing",
+    is_flag=True,
+    default=False,
+)
 @FormatOptions.decorator(PrintFormat.yaml)
 @CommonOptions.decorator()
 @click.argument("dict_paths", nargs=-1)

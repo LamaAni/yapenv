@@ -18,7 +18,9 @@ def handover(
         use_source_dir (bool, optional): If true, then use the config venv dir to start the process. Defaults to True.
         shell_executable (str, optional): The shell executable to use. Defaults to None.
     """
-    assert config.has_virtual_environment(), "Could not find virtual environment @ " + config.venv_path
+    assert config.has_virtual_environment(), (
+        "Could not find virtual environment @ " + config.venv_path
+    )
 
     if use_source_dir:
         os.chdir(config.source_directory)
@@ -54,7 +56,9 @@ def shell(
     command = []
     if os.name != "nt":
         active_shell = active_shell or os.environ.get("SHELL", "sh")
-        yapenv_activate = config.resolve_from_venv_directory("bin", "activate_yapenv_shell")
+        yapenv_activate = config.resolve_from_venv_directory(
+            "bin", "activate_yapenv_shell"
+        )
         venv_activate = config.resolve_from_venv_directory("bin", "activate")
         command = [active_shell, yapenv_activate, venv_activate, active_shell]
     else:

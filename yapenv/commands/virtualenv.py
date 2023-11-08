@@ -1,7 +1,13 @@
 import os
 import shutil
 from yapenv.log import yapenv_log
-from yapenv.utils import resolve_template, run_python_module, option_or_empty, clean_args, quote_no_expand_args
+from yapenv.utils import (
+    resolve_template,
+    run_python_module,
+    option_or_empty,
+    clean_args,
+    quote_no_expand_args,
+)
 from yapenv.config import YAPENVConfig
 
 
@@ -13,7 +19,9 @@ def virtualenv_args(config: YAPENVConfig):
     """
     return quote_no_expand_args(
         *clean_args(
-            *option_or_empty("--python", config.python_executable or config.python_version),
+            *option_or_empty(
+                "--python", config.python_executable or config.python_version
+            ),
             *config.virtualenv_args,
             config.venv_path,
         )
@@ -38,7 +46,10 @@ def virtualenv_update_files(config: YAPENVConfig):
     if config.pip_config_path is not None:
         config_path = config.resolve_from_source_directory(config.pip_config_path)
         if not os.path.isfile(config_path):
-            yapenv_log.warning("Could not set custom config path, pip_config_path not found @ " + config_path)
+            yapenv_log.warning(
+                "Could not set custom config path, pip_config_path not found @ "
+                + config_path
+            )
         else:
             os.symlink(config_path, venv_config_path)
             yapenv_log.info("Linked virtual env pip.conf -> " + config_path)
