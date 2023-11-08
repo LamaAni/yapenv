@@ -23,7 +23,8 @@ jobs:
 
       - name: Install ci dependencies
         run: |
-          pip install . &&
+          python --version && 
+            pip install . &&
             yapenv requirements export --env ci | xargs pip install
 
       - name: Prepare version
