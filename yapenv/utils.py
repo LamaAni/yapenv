@@ -114,7 +114,11 @@ def run_python_module(
     use_venv: bool = True,
 ):
     if executable is None:
-        if use_venv and os.environ.get("VIRTUAL_ENV", None) is not None and which("python") is not None:
+        if (
+            use_venv
+            and os.environ.get("VIRTUAL_ENV", None) is not None
+            and which("python") is not None
+        ):
             executable = "python"
         else:
             executable = sys.executable
@@ -206,7 +210,9 @@ def get_collection_path(val: Union[dict, list], path: Union[str, List[str]]):
 
     cur_item = path[0]
     item_parts = re.match(COLLECTION_ITEM_PART_REGEX, cur_item)
-    assert item_parts is not None, f"item parts must match the regex '{COLLECTION_ITEM_PART_REGEX}'"
+    assert (
+        item_parts is not None
+    ), f"item parts must match the regex '{COLLECTION_ITEM_PART_REGEX}'"
 
     item_name = item_parts[1] if len(item_parts[1]) > 0 else None
     list_number = int(item_parts[2][1]) if len(item_parts[2]) > 0 else None
@@ -214,17 +220,23 @@ def get_collection_path(val: Union[dict, list], path: Union[str, List[str]]):
     if item_name is None and list_number is None:
         return get_collection_path(val, path[1:])
 
-    assert item_name is not None or list_number is not None, "Invalid item path part " + cur_item
+    assert item_name is not None or list_number is not None, (
+        "Invalid item path part " + cur_item
+    )
 
     was_found = False
     if item_name is not None:
-        assert isinstance(val, dict), f"{cur_item} references a dict value but parent is not a dict"
+        assert isinstance(
+            val, dict
+        ), f"{cur_item} references a dict value but parent is not a dict"
         if item_name not in val:
             return None, False
         val = val.get(item_name)
         was_found = True
     if list_number is not None:
-        assert isinstance(val, list), f"{cur_item} references a list value but parent is not a list"
+        assert isinstance(
+            val, list
+        ), f"{cur_item} references a list value but parent is not a list"
         if len(val) <= list_number:
             return None, False
         val = val[list_number]

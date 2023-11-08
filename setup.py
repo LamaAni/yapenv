@@ -4,7 +4,9 @@ from setuptools import setup, find_packages
 import logging
 
 REPO_PATH = os.path.dirname(os.path.abspath(__file__))
-VERSION_PATH = os.path.abspath(os.environ.get("VERSION_PATH", os.path.join(REPO_PATH, ".version")))
+VERSION_PATH = os.path.abspath(
+    os.environ.get("VERSION_PATH", os.path.join(REPO_PATH, ".version"))
+)
 GITHUB_URL = "https://github.com/LamaAni/yapenv"
 
 packages = find_packages()
@@ -17,7 +19,9 @@ with open(os.path.join(REPO_PATH, "README.md"), "r") as readme:
 with open(os.path.join(REPO_PATH, "requirements.txt"), "r") as requirements_file:
     requirements_text = requirements_file.read()
     requirements_text = re.sub(r"[#].*", "", requirements_text)
-    requirement_list = [r.strip() for r in requirements_text.split("\n") if len(r.strip()) > 0]
+    requirement_list = [
+        r.strip() for r in requirements_text.split("\n") if len(r.strip()) > 0
+    ]
 
 version = None
 if os.path.isfile(VERSION_PATH):

@@ -6,7 +6,9 @@ from yapenv.consts import YAPENV_VERSION
 from yapenv.log import yapenv_log
 
 
-@click.group(help=f"""Yet Another Python Environment manager (version: {YAPENV_VERSION})""")
+@click.group(
+    help=f"""Yet Another Python Environment manager (version: {YAPENV_VERSION})"""
+)
 def yapenv():
     pass
 
@@ -31,7 +33,9 @@ def run_cli_main(args: List[str] = None):
 
     except Exception as ex:
         if CommonOptions.SHOW_FULL_ERRORS is None:
-            CommonOptions.SHOW_FULL_ERRORS = os.environ.get("YAPENV_FULL_ERRORS", "false").lower() == "true"
+            CommonOptions.SHOW_FULL_ERRORS = (
+                os.environ.get("YAPENV_FULL_ERRORS", "false").lower() == "true"
+            )
         if CommonOptions.SHOW_FULL_ERRORS:
             raise ex
         else:

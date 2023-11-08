@@ -9,15 +9,23 @@ def virtualenv_command():
     pass
 
 
-@virtualenv_command.command("args", help="Create a venv install command for the yapenv config")
+@virtualenv_command.command(
+    "args", help="Create a venv install command for the yapenv config"
+)
 @FormatOptions.decorator(PrintFormat.cli, allow_quote=False)
 @CommonOptions.decorator()
 def virtualenv_args(**kwargs):
     config = CommonOptions(kwargs).load()
-    print(FormatOptions(kwargs).print(yapenv_commands.virtualenv_args(config), quote=False))
+    print(
+        FormatOptions(kwargs).print(
+            yapenv_commands.virtualenv_args(config), quote=False
+        )
+    )
 
 
-@virtualenv_command.command("create", help="Create a venv install command for the yapenv config")
+@virtualenv_command.command(
+    "create", help="Create a venv install command for the yapenv config"
+)
 @CommonOptions.decorator()
 def virtualenv_create(**kwargs):
     config = CommonOptions(kwargs).load()

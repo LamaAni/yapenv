@@ -86,9 +86,22 @@ class YAPENVConfig(CascadingConfig):
     @property
     def venv_path(self) -> str:
         """The path to the virtual environment"""
-        if os.path.isabs(self.venv_directory):
-            return self.venv_directory
-        return os.path.abspath(os.path.join(self.source_directory, self.venv_directory))
+        if "venv_path" not in self:
+            venv_path = os.path.join(self.source_directory, self.venv_directory)
+            if self.is_venv_with_local:
+                venv_path = os.path.join(venv_path, "local")
+            self["venv_path"] = os.path.abspath(venv_path)
+        else:
+            venv_path = self.get("venv_path")
+        return os.path.abspath(venv_path)
+
+    @property
+    def is_venv_with_local(self) -> bool:
+        if "is_venv_with_local" not in self:
+            self["is_venv_with_local"] = os.path.exists(
+                os.path.join(self.source_directory, self.venv_directory), "local"
+            )
+        return self.get("is_venv_with_local", False)
 
     @property
     def pip_config_path(self) -> str:
@@ -96,7 +109,9 @@ class YAPENVConfig(CascadingConfig):
 
     @property
     def python_version(self) -> str:
-        return self.get("python_version", f"{sys.version_info.major}.{sys.version_info.minor}")
+        return self.get(
+            "python_version", f"{sys.version_info.major}.{sys.version_info.minor}"
+        )
 
     @python_version.setter
     def python_version(self, val: str):
@@ -138,7 +153,9 @@ class YAPENVConfig(CascadingConfig):
         # requirements to have the proper relative path to the source.
         for requirement in self.requirements:
             if requirement.import_path is not None:
-                requirement["import"] = self.resolve_from_source_directory(requirement.import_path)
+                requirement["import"] = self.resolve_from_source_directory(
+                    requirement.import_path
+                )
 
     def load_requirements(self):
         """Resolves and loads the internal requirement imports and cleans up the requirements list"""
@@ -148,7 +165,9 @@ class YAPENVConfig(CascadingConfig):
         resolved_requirements = []
         for req in self.requirements:
             if req.import_path is not None:
-                abs_import_path = os.path.abspath(self.resolve_from_source_directory(req.import_path))
+                abs_import_path = os.path.abspath(
+                    self.resolve_from_source_directory(req.import_path)
+                )
 
                 if os.path.isfile(abs_import_path):
                     with open(abs_import_path, "r", encoding="utf-8") as req_file:
@@ -160,7 +179,9 @@ class YAPENVConfig(CascadingConfig):
                         req_as_str = req_as_str.strip()
                         if len(req_as_str) == 0:
                             continue
-                        resolved_requirements.append(YAPENVConfigRequirement.parse(req_as_str))
+                        resolved_requirements.append(
+                            YAPENVConfigRequirement.parse(req_as_str)
+                        )
 
             elif req.package is not None:
                 resolved_requirements.append(req)
@@ -173,8 +194,12 @@ class YAPENVConfig(CascadingConfig):
         import importlib.util
 
         import_path = self.resolve_from_venv_directory("bin", "activate_this.py")
-        assert os.path.isfile(import_path), "Virtual env not found or virtualenv invalid @ " + self.venv_path
-        spec = importlib.util.spec_from_file_location(re.sub(r"[^\w]+", "_", import_path), import_path)
+        assert os.path.isfile(import_path), (
+            "Virtual env not found or virtualenv invalid @ " + self.venv_path
+        )
+        spec = importlib.util.spec_from_file_location(
+            re.sub(r"[^\w]+", "_", import_path), import_path
+        )
         foo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(foo)
 
@@ -192,13 +217,19 @@ class YAPENVConfig(CascadingConfig):
         for req_config in requirement_configs:
             if REQUIREMENTS_COLLECTION_NAME in req_config:
                 for requirement in req_config.requirements:
-                    if requirement.import_path is not None and os.path.isabs(requirement.import_path):
-                        requirement["import"] = os.path.relpath(requirement.import_path, self.source_directory)
+                    if requirement.import_path is not None and os.path.isabs(
+                        requirement.import_path
+                    ):
+                        requirement["import"] = os.path.relpath(
+                            requirement.import_path, self.source_directory
+                        )
 
         # Now remove duplicates
         for req_config in requirement_configs:
             if REQUIREMENTS_COLLECTION_NAME in req_config:
-                req_config[REQUIREMENTS_COLLECTION_NAME] = YAPENVConfigRequirement.unique(req_config.requirements)
+                req_config[
+                    REQUIREMENTS_COLLECTION_NAME
+                ] = YAPENVConfigRequirement.unique(req_config.requirements)
 
     @classmethod
     def load(

@@ -4,7 +4,9 @@ import re
 ENTRY_ENVS = os.environ.copy()
 YAPENV_CONFIG_FILES = re.split(
     r"[\s,]+",
-    os.environ.get("YAPENV_CONFIG_FILES", ".yapenv.yaml .yapenv.yml .yapenv .yapenv.json"),
+    os.environ.get(
+        "YAPENV_CONFIG_FILES", ".yapenv.yaml .yapenv.yml .yapenv .yapenv.json"
+    ),
 )
 
 

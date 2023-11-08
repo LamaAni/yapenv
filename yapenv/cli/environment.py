@@ -11,7 +11,9 @@ from yapenv.utils import deep_merge
 
 
 @yapenv.command("delete", help="Delete the virtual environment installation")
-@click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
+@click.option(
+    "-f", "--force", help="Do not confirm the operation", is_flag=True, default=False
+)
 @CommonOptions.decorator()
 def delete(force: bool = False, **kwargs):
     config = CommonOptions(kwargs).load()
@@ -23,8 +25,12 @@ def delete(force: bool = False, **kwargs):
     help="Initialize the pip packages and install the packages using pipenv."
     + " If no packages specified installs packages from yapenv config",
 )
-@click.option("-r", "--reset", help="Reset the virtual environment", is_flag=True, default=False)
-@click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
+@click.option(
+    "-r", "--reset", help="Reset the virtual environment", is_flag=True, default=False
+)
+@click.option(
+    "-f", "--force", help="Do not confirm the operation", is_flag=True, default=False
+)
 @click.argument("packages", nargs=-1)
 @CommonOptions.decorator()
 def install(
@@ -49,12 +55,35 @@ def install(
     help="Use this python version. If empty ('') no python version will be set.",
     default=f"{sys.version_info.major}.{sys.version_info.minor}",
 )
-@click.option("-c", "--config-filename", help="Override the configuration filename", default=None)
-@click.option("-f", "--force", help="Do not confirm the operation", is_flag=True, default=False)
-@click.option("--no-install", help="Do not install after initializing", is_flag=True, default=False)
-@click.option("--no-requirement-files", help="Do not initialize with requirement files", is_flag=True, default=False)
-@click.option("--reset", help="Delete current configuration and reset it.", is_flag=True, default=False)
-@click.option("--init-depth", help="Number of parent folders to inherit the init config from. -1 = Inf", default=0)
+@click.option(
+    "-c", "--config-filename", help="Override the configuration filename", default=None
+)
+@click.option(
+    "-f", "--force", help="Do not confirm the operation", is_flag=True, default=False
+)
+@click.option(
+    "--no-install",
+    help="Do not install after initializing",
+    is_flag=True,
+    default=False,
+)
+@click.option(
+    "--no-requirement-files",
+    help="Do not initialize with requirement files",
+    is_flag=True,
+    default=False,
+)
+@click.option(
+    "--reset",
+    help="Delete current configuration and reset it.",
+    is_flag=True,
+    default=False,
+)
+@click.option(
+    "--init-depth",
+    help="Number of parent folders to inherit the init config from. -1 = Inf",
+    default=0,
+)
 @click.option(
     "-s",
     "--set-config-args",
@@ -73,8 +102,11 @@ def init(
     set_config_args: List[str] = [],
     **kwargs,
 ):
-
-    python_version = python_version if python_version is not None and len(python_version) > 0 else None
+    python_version = (
+        python_version
+        if python_version is not None and len(python_version) > 0
+        else None
+    )
 
     # parse config args
     merge_dicts = []
@@ -86,7 +118,10 @@ def init(
             yapenv_log.info("Merging with args from " + arg)
 
         except Exception as ex:
-            raise Exception("All merge arguments must be passed as json dictionaries. Could not parse " + arg) from ex
+            raise Exception(
+                "All merge arguments must be passed as json dictionaries. Could not parse "
+                + arg
+            ) from ex
 
     options = CommonOptions(kwargs)
     config = options.load(

@@ -22,10 +22,16 @@ def pip_command():
 @click.argument("packages", nargs=-1)
 def pip_args(packages: List[str], **kwargs):
     config = CommonOptions(kwargs).load()
-    print(FormatOptions(kwargs).print(yapenv_commands.pip_command_args(config, requirements=packages), quote=False))
+    print(
+        FormatOptions(kwargs).print(
+            yapenv_commands.pip_command_args(config, requirements=packages), quote=False
+        )
+    )
 
 
-@pip_command.command("install", help="Run pip install using the config (within this python version)")
+@pip_command.command(
+    "install", help="Run pip install using the config (within this python version)"
+)
 @CommonOptions.decorator()
 @click.argument("packages", nargs=-1)
 def pip_install(packages: List[str], **kwargs):

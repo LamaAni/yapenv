@@ -15,7 +15,9 @@ def check_delete_environment(config: YAPENVConfig, force: bool = False):
     """Helper: prompt to ask"""
     if force:
         return True
-    yapenv_log.warning("You are about to delete the virtual environment @ " + config.venv_path)
+    yapenv_log.warning(
+        "You are about to delete the virtual environment @ " + config.venv_path
+    )
     if input("WARNING: are you sure? (y/n) ") != "y":
         return False
     return True
@@ -103,7 +105,9 @@ def init(
 
     config_filename = config_filename or YAPENV_CONFIG_FILES[0] or ".yapenv.yaml"
     config_filepath = active_config.resolve_from_source_directory(config_filename)
-    yapenv_log.debug("Initialing with config: \n" + yaml.safe_dump(init_config.to_dictionary()))
+    yapenv_log.debug(
+        "Initialing with config: \n" + yaml.safe_dump(init_config.to_dictionary())
+    )
     with open(config_filepath, "w") as config_file:
         if config_filename.endswith(".json"):
             config_file.write(json.dumps(init_config.to_dictionary(), indent=2))
