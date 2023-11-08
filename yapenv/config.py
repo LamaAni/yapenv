@@ -86,22 +86,14 @@ class YAPENVConfig(CascadingConfig):
     @property
     def venv_path(self) -> str:
         """The path to the virtual environment"""
-        if "venv_path" not in self:
-            venv_path = os.path.join(self.source_directory, self.venv_directory)
-            if self.is_venv_with_local:
-                venv_path = os.path.join(venv_path, "local")
-            self["venv_path"] = os.path.abspath(venv_path)
-        else:
-            venv_path = self.get("venv_path")
-        return os.path.abspath(venv_path)
+        if os.path.isabs(self.venv_directory):
+            return self.venv_directory
+        return os.path.abspath(os.path.join(self.source_directory, self.venv_directory))
 
     @property
-    def is_venv_with_local(self) -> bool:
-        if "is_venv_with_local" not in self:
-            self["is_venv_with_local"] = os.path.exists(
-                os.path.join(self.source_directory, self.venv_directory), "local"
-            )
-        return self.get("is_venv_with_local", False)
+    def venv_local_folder_path(self) -> str:
+        """The path to the virtual environment"""
+        return os.path.join(os.path.join(self.venv_path, "local"))
 
     @property
     def pip_config_path(self) -> str:
@@ -136,7 +128,12 @@ class YAPENVConfig(CascadingConfig):
 
     def resolve_from_venv_directory(self, *parts: List[str]):
         """Resolve path with the virtual env directory as root path"""
-        return resolve_path(*parts, root_directory=self.venv_path)
+        return resolve_path(
+            *parts,
+            root_directory=self.venv_local_folder_path
+            if os.path.exists(self.venv_local_folder_path) # Case where local path exists
+            else self.venv_path,
+        )
 
     def resolve_from_source_directory(self, *parts: List[str]):
         """Resolve path with the source directory as root path"""
