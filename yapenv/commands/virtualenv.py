@@ -17,22 +17,21 @@ def virtualenv_args(config: YAPENVConfig):
     Args:
         config (YAPENVConfig): The yapenv config.
     """
-    return quote_no_expand_args(
-        *clean_args(
-            *option_or_empty(
-                "--python", config.python_executable or config.python_version
-            ),
-            *config.virtualenv_args,
-            config.venv_path,
-        )
+    args = clean_args(
+        *option_or_empty("--python", config.python_executable or config.python_version),
+        *config.virtualenv_args
     )
+    return [
+        *quote_no_expand_args(*args),
+        config.venv_path,
+    ]
 
 
 def virtualenv_update_files(config: YAPENVConfig):
     yapenv_log.info("Copying yapenv shell activation script")
     shutil.copyfile(
         resolve_template("activate_yapenv_shell"),
-        config.resolve_from_venv_directory("bin", "activate_yapenv_shell"),
+        config.resolve_from_venv_bin_directory("activate_yapenv_shell"),
     )
 
     # Removing old
@@ -61,9 +60,11 @@ def virtualenv_create(config: YAPENVConfig):
     Args:
         config (YAPENVConfig): The yapenv config.
     """
+    yapenv_log.debug("lasma")
     yapenv_log.info("Creating virtualenv @ " + config.venv_path)
     cmnd = ["virtualenv", *virtualenv_args(config)]
-    yapenv_log.debug(str(cmnd))
+
+    yapenv_log.debug(" ".join(cmnd))
     run_python_module(*cmnd, use_venv=False)
 
     # Updating setup files.

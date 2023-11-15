@@ -74,6 +74,7 @@ def install(
     default=False,
 )
 @click.option(
+    "-r",
     "--reset",
     help="Delete current configuration and reset it.",
     is_flag=True,
