@@ -7,6 +7,7 @@ import sys
 import shlex
 from typing import List, Union
 from shutil import which
+from yapenv.log import yapenv_log
 
 
 def option_or_empty(key, val):
@@ -167,6 +168,8 @@ def run_shell_commands(
 
     run_env = os.environ.copy() if include_process_envs else {}
     run_env.update(envs or {})
+
+    yapenv_log.debug(" ".join(shell_command))
 
     rslt = subprocess.run(
         " ".join(shell_command),

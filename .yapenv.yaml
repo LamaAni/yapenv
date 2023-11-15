@@ -1,11 +1,7 @@
 environments:
-  ci:
-    requirements:
-    - import: requirements.ci.txt
   dev:
     requirements:
     - import: requirements.dev.txt
-pip_config_path: pip.conf
 python_version: '3.11'
 requirements:
 - import: requirements.txt
