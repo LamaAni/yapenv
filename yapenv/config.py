@@ -145,7 +145,9 @@ class YAPENVConfig(CascadingConfig):
             if os.path.exists(self.resolve_from_venv_directory(fldr)):
                 bin_fldr = fldr
                 break
-        assert bin_fldr is not None, FileNotFoundError(f"Bin folder was not found (searched for {possible_bin_folders})")
+        assert bin_fldr is not None, FileNotFoundError(
+            f"Bin folder was not found (searched for {possible_bin_folders})"
+        )
         return self.resolve_from_venv_directory(bin_fldr, *parts)
 
     def resolve_from_source_directory(self, *parts: List[str]):
