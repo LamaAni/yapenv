@@ -1,4 +1,7 @@
 environments:
+  ci:
+    requirements:
+    - import: requirements.ci.txt
   dev:
     requirements:
     - import: requirements.dev.txt
