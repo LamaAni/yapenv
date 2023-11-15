@@ -137,6 +137,17 @@ class YAPENVConfig(CascadingConfig):
             else self.venv_path,
         )
 
+    def resolve_from_venv_bin_directory(self, *parts: List[str]):
+        """Resolves a script from the bin directory"""
+        possible_bin_folders = ["bin", "Scripts"]
+        bin_fldr = None
+        for fldr in possible_bin_folders:
+            if os.path.exists(self.resolve_from_venv_directory(fldr)):
+                bin_fldr = fldr
+                break
+        assert bin_fldr is not None, FileNotFoundError(f"Bin folder was not found (searched for {possible_bin_folders})")
+        return self.resolve_from_venv_directory(bin_fldr, *parts)
+
     def resolve_from_source_directory(self, *parts: List[str]):
         """Resolve path with the source directory as root path"""
         return resolve_path(*parts, root_directory=self.source_directory)
@@ -192,7 +203,7 @@ class YAPENVConfig(CascadingConfig):
         """Loads the virtual environment into python (using activate.py)."""
         import importlib.util
 
-        import_path = self.resolve_from_venv_directory("bin", "activate_this.py")
+        import_path = self.resolve_from_venv_bin_directory("activate_this.py")
         assert os.path.isfile(import_path), (
             "Virtual env not found or virtualenv invalid @ " + self.venv_path
         )

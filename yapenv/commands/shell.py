@@ -56,10 +56,10 @@ def shell(
     command = []
     if os.name != "nt":
         active_shell = active_shell or os.environ.get("SHELL", "sh")
-        yapenv_activate = config.resolve_from_venv_directory(
-            "bin", "activate_yapenv_shell"
+        yapenv_activate = config.resolve_from_venv_bin_directory(
+            "activate_yapenv_shell"
         )
-        venv_activate = config.resolve_from_venv_directory("bin", "activate")
+        venv_activate = config.resolve_from_venv_bin_directory("activate")
         command = [active_shell, yapenv_activate, venv_activate, active_shell]
     else:
         config.load_virtualenv()

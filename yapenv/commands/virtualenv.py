@@ -31,7 +31,7 @@ def virtualenv_update_files(config: YAPENVConfig):
     yapenv_log.info("Copying yapenv shell activation script")
     shutil.copyfile(
         resolve_template("activate_yapenv_shell"),
-        config.resolve_from_venv_directory("bin", "activate_yapenv_shell"),
+        config.resolve_from_venv_bin_directory("activate_yapenv_shell"),
     )
 
     # Removing old
